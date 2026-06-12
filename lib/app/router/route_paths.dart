@@ -9,6 +9,7 @@ abstract final class RoutePaths {
   static const planGenerationLoading = '/plan-generation-loading';
 
   static const home = '/home';
+  static const todayPlanDetail = '/home/today-plan';
   static const history = '/history';
   static const myPage = '/my-page';
 }

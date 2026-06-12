@@ -88,3 +88,22 @@ If context is reset, read this file first, then `agent-notes.md`.
 - Completion path refreshes `GET /users/me` before routing to `Home`, because redirect logic still depends on `userProfile.onboardingCompleted`.
 - Added `SessionController.clearActiveJobId()` because the loading flow needs to clear only the in-progress job without destroying tokens or the rest of the session.
 - Exam plan session persistence now merges partial exam-plan responses with existing study profile fields so later steps still have `preferredStudyMethod` and `usualStudyHoursPerDay`.
+
+## 2026-06-12 Task 8 Dashboard / Today Plan Read Notes
+
+- `/home` is no longer a placeholder. It now loads:
+  - `GET /dashboard` via `DashboardController`
+  - `GET /plans/today` and `GET /plans/today/progress` via `TodayPlanController`
+- `TodayPlanController` is the shared read source for both:
+  - `HomePage` preview
+  - `TodayPlanDetailPage`
+- Added route `RoutePaths.todayPlanDetail = /home/today-plan`, nested under the home branch in the shell router.
+- Current `today_plan` repository is read-only. Task 9 will extend the same feature with:
+  - bulk update
+  - item toggle
+  - completion
+- Shared widgets added for the main app surface:
+  - `AppScaffold`
+  - `SectionCard`
+  - `ProgressSummaryCard`
+  - `PlanItemTile`

@@ -8,8 +8,10 @@ import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/exam_plan/presentation/pages/exam_plan_page.dart';
 import '../../features/exam_plan/presentation/pages/subject_scope_page.dart';
 import '../../features/onboarding/presentation/pages/study_profile_page.dart';
+import '../../features/dashboard/presentation/pages/home_page.dart';
 import '../../features/plan_generation/domain/model/plan_generation_input.dart';
 import '../../features/plan_generation/presentation/pages/plan_generation_loading_page.dart';
+import '../../features/today_plan/presentation/pages/today_plan_detail_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
 import 'app_redirect_logic.dart';
 import 'main_shell.dart';
@@ -91,12 +93,16 @@ abstract final class AppRouter {
               routes: [
                 GoRoute(
                   path: RoutePaths.home,
-                  pageBuilder: (context, state) => const NoTransitionPage(
-                    child: _RoutePlaceholderPage(
-                      title: 'Home',
-                      subtitle: 'Dashboard summary placeholder.',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: HomePage()),
+                  routes: [
+                    GoRoute(
+                      path: 'today-plan',
+                      pageBuilder: (context, state) => const MaterialPage(
+                        child: TodayPlanDetailPage(),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
