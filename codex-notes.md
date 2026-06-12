@@ -62,3 +62,15 @@ If context is reset, read this file first, then `agent-notes.md`.
   3. plan generation loading when `jobId` exists for an onboarding-incomplete user
   4. study profile onboarding when authenticated but incomplete
   5. main shell for authenticated + onboarding complete
+
+## 2026-06-12 Task 6 Onboarding Form Notes
+
+- Scope owner for this task is limited to `lib/features/onboarding/**`, `lib/features/exam_plan/**`, related tests, and minimal route integration only if the placeholders must be replaced.
+- Existing redirect logic already allows `/study-profile`, `/exam-plan`, and `/subject-scope` for onboarding-incomplete users; keep that policy unchanged.
+- `PUT /users/me/study-profile` payload is explicit in `api-spec.md` and should update `SessionSnapshot.userProfile` with the returned server state so re-entry shows current values.
+- `PUT /exam-plans/active` and `PUT /exam-plans/active/scopes` are contract-light in `api-spec.md`; Task 6 should use a minimal client payload:
+  - exam plan: `targetExamType`, `targetExamLabel`, `examDate`
+  - subject scopes: list of subjects with `subjectName`, `examRange`, `preferredMethodNote`, `priority`
+- Re-entry behavior should prefer current server-backed state where practical in Task 6 scope:
+  - study profile and exam plan can hydrate from `SessionSnapshot.userProfile`
+  - subject scope has no existing read API in scope, so keep it local-to-form for this task and document the assumption

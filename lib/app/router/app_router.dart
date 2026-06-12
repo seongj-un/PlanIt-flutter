@@ -5,6 +5,9 @@ import '../../core/session/session_snapshot.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
+import '../../features/exam_plan/presentation/pages/exam_plan_page.dart';
+import '../../features/exam_plan/presentation/pages/subject_scope_page.dart';
+import '../../features/onboarding/presentation/pages/study_profile_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
 import 'app_redirect_logic.dart';
 import 'main_shell.dart';
@@ -53,30 +56,18 @@ abstract final class AppRouter {
         ),
         GoRoute(
           path: RoutePaths.studyProfile,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _RoutePlaceholderPage(
-              title: 'Study Profile',
-              subtitle: 'Study profile onboarding placeholder.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: StudyProfilePage()),
         ),
         GoRoute(
           path: RoutePaths.examPlan,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _RoutePlaceholderPage(
-              title: 'Exam Plan',
-              subtitle: 'Exam plan onboarding placeholder.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: ExamPlanPage()),
         ),
         GoRoute(
           path: RoutePaths.subjectScope,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _RoutePlaceholderPage(
-              title: 'Subject Scope',
-              subtitle: 'Subject scope onboarding placeholder.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const NoTransitionPage(child: SubjectScopePage()),
         ),
         GoRoute(
           path: RoutePaths.planGenerationLoading,
