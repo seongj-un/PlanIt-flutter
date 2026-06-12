@@ -15,8 +15,8 @@ If context is reset, read this file first, then `agent-notes.md`.
 
 ## Replacement Targets Later
 
-- `lib/main.dart`
-- `test/widget_test.dart`
+- `lib/main.dart` - temporary scaffold baseline file
+- `test/widget_test.dart` - temporary scaffold baseline file
 - App dependencies and routing in later tasks via `pubspec.yaml` and supporting source files
 
 ## Guardrails

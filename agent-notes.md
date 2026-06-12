@@ -57,11 +57,11 @@
 
 - Flutter 스캐폴딩을 시작했다.
 - 이번 작업의 기준 문서는 `docs/superpowers/specs/2026-06-12-flutter-app-design.md`와 `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`다.
-- 생성 직후 기본 템플릿은 카운터 앱이며, 이후 교체 대상의 핵심 파일은 `lib/main.dart`와 `test/widget_test.dart`다.
+- 생성 직후 기본 템플릿은 카운터 앱이며, `lib/main.dart`와 `test/widget_test.dart`는 의도적으로 남겨 둔 임시 스캐폴드 기준 파일이다.
 - `pubspec.yaml`, `analysis_options.yaml`, `.gitignore`는 Flutter 기본 스캐폴드 상태를 기준으로 이후 Task 2에서 확장한다.
 
 ## 다음 턴 시작 체크
 
-- 이 파일 먼저 읽기
+- 컨텍스트 복구 시 `codex-notes.md`를 먼저 읽고, 그다음 이 파일을 읽는다.
 - 그다음 `api-spec.md`와 `docs/superpowers/specs/2026-06-12-flutter-app-design.md` 확인
 - 구현 전에는 현재 브랜치 상태와 Flutter SDK 사용 가능 여부 확인

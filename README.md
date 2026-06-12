@@ -1,17 +1,14 @@
-# planit_flutter
+# PlanIt Flutter
 
-A new Flutter project.
+Flutter app scaffold for the PlanIt mobile client.
 
-## Getting Started
+## Source of truth
 
-This project is a starting point for a Flutter application.
+- [`api-spec.md`](api-spec.md)
+- [`docs/superpowers/specs/2026-06-12-flutter-app-design.md`](docs/superpowers/specs/2026-06-12-flutter-app-design.md)
+- [`docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`](docs/superpowers/plans/2026-06-12-flutter-app-foundation.md)
 
-A few resources to get you started if this is your first Flutter project:
+## Notes
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- The repository is in the initial scaffold stage.
+- `lib/main.dart` and `test/widget_test.dart` are temporary baseline files from the generated Flutter starter and will be replaced in later tasks.
