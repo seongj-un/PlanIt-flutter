@@ -60,7 +60,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> _persistSession(AuthResponseDto response) {
     return _sessionController.save(
       tokens: response.toSessionTokens(_now().toUtc()),
-      activeJobId: _sessionController.state.activeJobId,
+      activeJobId: _sessionController.activeJobId,
       userProfile: _toUserProfile(response.toDomain()),
     );
   }

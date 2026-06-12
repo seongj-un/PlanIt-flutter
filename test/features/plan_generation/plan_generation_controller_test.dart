@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -206,6 +205,27 @@ class _FakeUserRepository implements UserRepository {
   Future<UserProfile> getCurrentUser() async {
     return userProfile;
   }
+
+  @override
+  Future<void> logout(String refreshToken) async {}
+
+  @override
+  Future<void> updateAccount({
+    required String name,
+    required String password,
+  }) async {}
+
+  @override
+  Future<void> updateNotificationSettings({
+    required bool dailyReminderEnabled,
+    required String dailyReminderTime,
+  }) async {}
+
+  @override
+  Future<void> updateStudySettings({
+    required int usualStudyHoursPerDay,
+    required String preferredStudyMethod,
+  }) async {}
 }
 
 class _MemorySecureStorageService implements SecureStorageService {

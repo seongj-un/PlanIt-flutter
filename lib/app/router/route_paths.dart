@@ -13,4 +13,7 @@ abstract final class RoutePaths {
   static const todayPlanEdit = '/home/today-plan/edit';
   static const history = '/history';
   static const myPage = '/my-page';
+  static const myPageStudySettings = '/my-page/study-settings';
+  static const myPageNotificationSettings = '/my-page/notification-settings';
+  static const myPageAccountSettings = '/my-page/account-settings';
 }

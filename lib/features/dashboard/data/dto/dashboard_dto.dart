@@ -2,13 +2,16 @@ import '../../../../core/error/app_exception.dart';
 import '../../domain/model/dashboard_summary.dart';
 
 class DashboardDto {
-  const DashboardDto({
+  const DashboardDto._({
     required this.userName,
-    required this.nextExam,
-    required this.todayPlan,
-    required this.rewards,
-    required this.attendance,
-  });
+    required _DashboardExamDto nextExam,
+    required _DashboardTodayPlanDto todayPlan,
+    required _DashboardRewardsDto rewards,
+    required _DashboardAttendanceDto attendance,
+  }) : _nextExam = nextExam,
+       _todayPlan = todayPlan,
+       _rewards = rewards,
+       _attendance = attendance;
 
   factory DashboardDto.fromJson(Object? json) {
     if (json is! Map) {
@@ -27,7 +30,7 @@ class DashboardDto {
       );
     }
 
-    return DashboardDto(
+    return DashboardDto._(
       userName: userName,
       nextExam: _DashboardExamDto.fromJson(map['nextExam']),
       todayPlan: _DashboardTodayPlanDto.fromJson(map['todayPlan']),
@@ -37,18 +40,18 @@ class DashboardDto {
   }
 
   final String userName;
-  final _DashboardExamDto nextExam;
-  final _DashboardTodayPlanDto todayPlan;
-  final _DashboardRewardsDto rewards;
-  final _DashboardAttendanceDto attendance;
+  final _DashboardExamDto _nextExam;
+  final _DashboardTodayPlanDto _todayPlan;
+  final _DashboardRewardsDto _rewards;
+  final _DashboardAttendanceDto _attendance;
 
   DashboardSummary toDomain() {
     return DashboardSummary(
       userName: userName,
-      nextExam: nextExam.toDomain(),
-      todayPlanPreview: todayPlan.toDomain(),
-      rewards: rewards.toDomain(),
-      attendance: attendance.toDomain(),
+      nextExam: _nextExam.toDomain(),
+      todayPlanPreview: _todayPlan.toDomain(),
+      rewards: _rewards.toDomain(),
+      attendance: _attendance.toDomain(),
     );
   }
 }

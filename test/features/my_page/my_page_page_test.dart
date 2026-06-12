@@ -12,31 +12,13 @@ import 'package:planit_flutter/core/storage/secure_storage_service.dart';
 import 'package:planit_flutter/features/my_page/data/repository/user_repository_impl.dart';
 import 'package:planit_flutter/features/my_page/domain/model/user_profile.dart';
 import 'package:planit_flutter/features/my_page/domain/repository/user_repository.dart';
-import 'package:planit_flutter/features/plan_generation/data/repository/plan_generation_repository_impl.dart';
-import 'package:planit_flutter/features/plan_generation/domain/model/plan_generation_input.dart';
-import 'package:planit_flutter/features/plan_generation/domain/model/plan_generation_status.dart';
-import 'package:planit_flutter/features/plan_generation/domain/repository/plan_generation_repository.dart';
-import 'package:planit_flutter/features/plan_generation/presentation/pages/plan_generation_loading_page.dart';
+import 'package:planit_flutter/features/my_page/presentation/pages/my_page.dart';
 
 void main() {
-  testWidgets('navigates to home when plan generation completes', (tester) async {
-    final repository = _FakePlanGenerationRepository(
-      createResponse: const PlanGenerationStatus(
-        jobId: 'job-123',
-        status: PlanGenerationJobStatus.completed,
-        planDate: '2026-06-12',
-        planId: 7,
-        dashboardAvailable: true,
-      ),
-    );
-    final userRepository = _FakeUserRepository(
-      userProfile: const UserProfile(
-        id: 1,
-        name: '김민지',
-        email: 'minji@example.com',
-        onboardingCompleted: true,
-      ),
-    );
+  testWidgets('renders profile summary and logs out to the welcome route', (
+    tester,
+  ) async {
+    final repository = _FakeUserRepository();
     final sessionController = SessionController(
       SessionRepository(
         secureStorage: _MemorySecureStorageService(),
@@ -51,39 +33,20 @@ void main() {
         email: 'minji@example.com',
         preferredStudyMethod: 'BALANCED',
         usualStudyHoursPerDay: 4,
-        onboardingCompleted: false,
+        onboardingCompleted: true,
       ),
     );
     final router = GoRouter(
-      initialLocation: RoutePaths.planGenerationLoading,
+      initialLocation: RoutePaths.myPage,
       routes: [
         GoRoute(
-          path: RoutePaths.planGenerationLoading,
-          builder: (context, state) => const PlanGenerationLoadingPage(
-            initialInput: PlanGenerationInput(
-              subjects: [
-                PlanGenerationSubjectInput(
-                  subjectName: '수학',
-                  examRange: '수열과 극한 1~3단원',
-                  preferredMethodNote: '개념 정리 후 대표 문제',
-                  difficulty: 'HIGH',
-                ),
-              ],
-              preferredStudyMethod: 'BALANCED',
-              difficultSubjects: ['수학'],
-              dailyMaxStudyHours: 4,
-            ),
-          ),
+          path: RoutePaths.myPage,
+          builder: (context, state) => const MyPagePage(),
         ),
         GoRoute(
-          path: RoutePaths.home,
+          path: RoutePaths.welcome,
           builder: (context, state) =>
-              const Scaffold(body: Text('home-route')),
-        ),
-        GoRoute(
-          path: RoutePaths.subjectScope,
-          builder: (context, state) =>
-              const Scaffold(body: Text('subject-scope-route')),
+              const Scaffold(body: Text('welcome-route')),
         ),
       ],
     );
@@ -91,44 +54,35 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          planGenerationRepositoryProvider.overrideWithValue(repository),
-          userRepositoryProvider.overrideWithValue(userRepository),
+          userRepositoryProvider.overrideWithValue(repository),
           sessionControllerProvider.overrideWith((ref) => sessionController),
         ],
         child: MaterialApp.router(routerConfig: router),
       ),
     );
-    await tester.pump();
     await tester.pumpAndSettle();
 
-    expect(find.text('home-route'), findsOneWidget);
+    expect(find.text('김민지'), findsOneWidget);
+    expect(find.text('minji@example.com'), findsOneWidget);
+
+    await tester.tap(find.text('로그아웃'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('welcome-route'), findsOneWidget);
   });
 }
 
-class _FakePlanGenerationRepository implements PlanGenerationRepository {
-  _FakePlanGenerationRepository({required this.createResponse});
-
-  final PlanGenerationStatus createResponse;
-
-  @override
-  Future<PlanGenerationStatus> createJob(PlanGenerationInput input) async {
-    return createResponse;
-  }
-
-  @override
-  Future<PlanGenerationStatus> fetchStatus(String jobId) {
-    throw UnimplementedError();
-  }
-}
-
 class _FakeUserRepository implements UserRepository {
-  _FakeUserRepository({required this.userProfile});
-
-  final UserProfile userProfile;
-
   @override
   Future<UserProfile> getCurrentUser() async {
-    return userProfile;
+    return const UserProfile(
+      id: 1,
+      name: '김민지',
+      email: 'minji@example.com',
+      preferredStudyMethod: 'BALANCED',
+      usualStudyHoursPerDay: 4,
+      onboardingCompleted: true,
+    );
   }
 
   @override
@@ -173,22 +127,16 @@ class _MemorySecureStorageService implements SecureStorageService {
 }
 
 class _MemoryPreferencesService implements PreferencesService {
-  String? _activeJobId;
-
   @override
-  Future<void> clearActiveJobId() async {
-    _activeJobId = null;
-  }
+  Future<void> clearActiveJobId() async {}
 
   @override
   Future<String?> readActiveJobId() async {
-    return _activeJobId;
+    return null;
   }
 
   @override
-  Future<void> saveActiveJobId(String jobId) async {
-    _activeJobId = jobId;
-  }
+  Future<void> saveActiveJobId(String jobId) async {}
 }
 
 final _tokens = SessionTokens(

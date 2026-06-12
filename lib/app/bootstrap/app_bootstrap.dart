@@ -48,7 +48,7 @@ final sessionRestoreActionProvider = Provider<SessionRestoreAction>((ref) {
 final appRouterProvider = Provider<GoRouter>((ref) {
   ref.watch(appRuntimeConfigProvider);
   final refreshNotifier = ValueNotifier<int>(0);
-  ref.listen(sessionControllerProvider, (_, __) {
+  ref.listen(sessionControllerProvider, (previous, next) {
     refreshNotifier.value++;
   });
   ref.onDispose(refreshNotifier.dispose);

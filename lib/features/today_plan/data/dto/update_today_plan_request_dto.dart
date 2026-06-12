@@ -1,27 +1,27 @@
 import '../../domain/model/today_plan.dart';
 
 class UpdateTodayPlanRequestDto {
-  const UpdateTodayPlanRequestDto({
-    required this.items,
+  const UpdateTodayPlanRequestDto._({
+    required List<_TodayPlanEditableItemDto> items,
     required this.deletedPlanItemIds,
-  });
+  }) : _items = items;
 
   factory UpdateTodayPlanRequestDto.fromDomain({
     required List<TodayPlanEditableItem> items,
     required List<int> deletedPlanItemIds,
   }) {
-    return UpdateTodayPlanRequestDto(
+    return UpdateTodayPlanRequestDto._(
       items: items.map(_TodayPlanEditableItemDto.fromDomain).toList(growable: false),
       deletedPlanItemIds: deletedPlanItemIds,
     );
   }
 
-  final List<_TodayPlanEditableItemDto> items;
+  final List<_TodayPlanEditableItemDto> _items;
   final List<int> deletedPlanItemIds;
 
   Map<String, Object?> toJson() {
     return {
-      'items': items.map((item) => item.toJson()).toList(),
+      'items': _items.map((item) => item.toJson()).toList(),
       'deletedPlanItemIds': deletedPlanItemIds,
     };
   }

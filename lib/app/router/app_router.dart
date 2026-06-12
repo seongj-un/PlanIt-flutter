@@ -7,6 +7,12 @@ import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/exam_plan/presentation/pages/exam_plan_page.dart';
 import '../../features/exam_plan/presentation/pages/subject_scope_page.dart';
+import '../../features/history/presentation/pages/history_detail_page.dart';
+import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/my_page/presentation/pages/account_settings_page.dart';
+import '../../features/my_page/presentation/pages/my_page.dart';
+import '../../features/my_page/presentation/pages/notification_settings_page.dart';
+import '../../features/my_page/presentation/pages/study_settings_page.dart';
 import '../../features/onboarding/presentation/pages/study_profile_page.dart';
 import '../../features/dashboard/presentation/pages/home_page.dart';
 import '../../features/plan_generation/domain/model/plan_generation_input.dart';
@@ -124,12 +130,18 @@ abstract final class AppRouter {
               routes: [
                 GoRoute(
                   path: RoutePaths.history,
-                  pageBuilder: (context, state) => const NoTransitionPage(
-                    child: _RoutePlaceholderPage(
-                      title: 'History',
-                      subtitle: 'Study history placeholder.',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: HistoryPage()),
+                  routes: [
+                    GoRoute(
+                      path: ':date',
+                      pageBuilder: (context, state) => MaterialPage(
+                        child: HistoryDetailPage(
+                          date: state.pathParameters['date']!,
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),
@@ -137,12 +149,25 @@ abstract final class AppRouter {
               routes: [
                 GoRoute(
                   path: RoutePaths.myPage,
-                  pageBuilder: (context, state) => const NoTransitionPage(
-                    child: _RoutePlaceholderPage(
-                      title: 'My Page',
-                      subtitle: 'Profile and settings placeholder.',
+                  pageBuilder: (context, state) =>
+                      const NoTransitionPage(child: MyPagePage()),
+                  routes: [
+                    GoRoute(
+                      path: 'study-settings',
+                      pageBuilder: (context, state) =>
+                          const MaterialPage(child: StudySettingsPage()),
                     ),
-                  ),
+                    GoRoute(
+                      path: 'notification-settings',
+                      pageBuilder: (context, state) =>
+                          const MaterialPage(child: NotificationSettingsPage()),
+                    ),
+                    GoRoute(
+                      path: 'account-settings',
+                      pageBuilder: (context, state) =>
+                          const MaterialPage(child: AccountSettingsPage()),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -192,46 +217,6 @@ class _SplashPlaceholderPage extends StatelessWidget {
             message: 'Preparing your study plan...',
           );
         },
-      ),
-    );
-  }
-}
-
-class _RoutePlaceholderPage extends StatelessWidget {
-  const _RoutePlaceholderPage({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: theme.textTheme.headlineMedium),
-                      const SizedBox(height: 12),
-                      Text(subtitle, style: theme.textTheme.bodyMedium),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }

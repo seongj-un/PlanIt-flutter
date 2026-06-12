@@ -12,6 +12,10 @@ class SessionController extends StateNotifier<SessionSnapshot> {
 
   final SessionRepository _repository;
 
+  String? get activeJobId => state.activeJobId;
+  SessionTokens? get tokens => state.tokens;
+  UserProfile? get userProfile => state.userProfile;
+
   Future<void> clear() async {
     await _repository.clear();
     state = const SessionSnapshot(status: SessionStatus.unauthenticated);

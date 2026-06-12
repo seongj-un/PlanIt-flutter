@@ -3,7 +3,7 @@ import '../../../../core/session/session_tokens.dart';
 import '../../domain/model/auth_user.dart';
 
 class AuthResponseDto {
-  const AuthResponseDto({required this.user, required this.tokens});
+  const AuthResponseDto._(this._user, this._tokens);
 
   factory AuthResponseDto.fromJson(Object? json) {
     if (json is! Map) {
@@ -15,19 +15,19 @@ class AuthResponseDto {
 
     final map = Map<String, Object?>.from(json);
 
-    return AuthResponseDto(
-      user: _AuthUserDto.fromJson(map['user']),
-      tokens: _AuthTokensDto.fromJson(map['tokens']),
+    return AuthResponseDto._(
+      _AuthUserDto.fromJson(map['user']),
+      _AuthTokensDto.fromJson(map['tokens']),
     );
   }
 
-  final _AuthUserDto user;
-  final _AuthTokensDto tokens;
+  final _AuthUserDto _user;
+  final _AuthTokensDto _tokens;
 
-  AuthUser toDomain() => user.toDomain();
+  AuthUser toDomain() => _user.toDomain();
 
   SessionTokens toSessionTokens(DateTime issuedAtUtc) {
-    return tokens.toSessionTokens(issuedAtUtc);
+    return _tokens.toSessionTokens(issuedAtUtc);
   }
 }
 
