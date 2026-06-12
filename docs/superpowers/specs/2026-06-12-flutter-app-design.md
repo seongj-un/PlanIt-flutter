@@ -451,3 +451,30 @@ API 계약 기준은 `api-spec.md`다. 다만 실제 백엔드 구현과 차이�
 - 애널리틱스
 - 오프라인 우선 동기화
 - 태블릿 전용 레이아웃
+
+## Implementation Notes On 2026-06-12
+
+- 실제 구현은 이 문서의 범위를 모두 포함한다.
+- 다만 API 계약상 읽기 경로가 부족한 영역은 아래처럼 보완했다.
+
+### Plan Generation Input Recovery
+
+- `PUT /exam-plans/active/scopes` 이후 subject scope를 다시 읽는 API가 현재 범위에 없다.
+- 그래서 앱은 subject scope 화면에서 `PlanGenerationInput`을 바로 만들어 `Plan Generation Loading`으로 route extra로 넘긴다.
+- loading 화면은 새 job 생성과 기존 `jobId` polling 복구를 모두 담당한다.
+
+### Notification Settings Hydration Gap
+
+- 현재 `GET /users/me` 응답에는 notification settings가 없다.
+- 그래서 알림 설정 화면은 서버 현재값 hydrate 없이 기본값으로 진입하고, 저장만 실백엔드에 연결한다.
+- 추후 조회 API 또는 `GET /users/me` 필드 확장이 생기면 이 부분을 보강해야 한다.
+
+### Session And Logout Behavior
+
+- 로그아웃은 `POST /auth/logout` 성공 여부와 무관하게 로컬 세션 정리를 우선한다.
+- plan generation 완료 후에는 `GET /users/me`를 다시 호출해 `onboardingCompleted` 상태를 갱신한 뒤 메인 앱으로 이동한다.
+
+### Today Plan Edit Routing
+
+- `Today Plan Edit`는 현재 `TodayPlan` route extra를 받아 폼을 초기화한다.
+- 앱 내 정상 플로우에서는 문제가 없지만, 직접 deep link로 열면 fallback 화면이 표시된다.

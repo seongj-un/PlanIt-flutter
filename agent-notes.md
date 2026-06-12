@@ -11,47 +11,56 @@
 
 ## 현재 저장소 상태
 
-- 현재 `/Users/seongjun/Desktop/project/PlanIt-flutter`에는 구현 코드가 없고 문서와 IDE 설정만 있다.
-- 현재 디렉터리는 Git 저장소다. 기본 브랜치는 `main`이다.
-- 확인된 Markdown 문서:
-  - `project.md`
+- 현재 저장소는 문서 전용 상태가 아니라 Flutter 앱 구현본이다.
+- 현재 작업 브랜치는 `feat/flutter-app-foundation`이다.
+- 기준 문서:
   - `api-spec.md`
-  - `docs/superpowers/specs/2026-06-09-plan-generation-jobs-mvp-design.md`
-  - `docs/superpowers/plans/2026-06-09-plan-generation-jobs-mvp.md`
-  - `docs/superpowers/specs/2026-06-11-plan-apis-batch-design.md`
-  - `docs/superpowers/plans/2026-06-11-plan-apis-batch.md`
   - `docs/superpowers/specs/2026-06-12-flutter-app-design.md`
+  - `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`
 
-## 문서 기준 우선 구현 결론
+## 구현 완료 범위
 
-- 백엔드는 이미 구현 완료 상태라는 사용자 설명이 있다.
-- 이 저장소의 실제 작업 대상은 Flutter 프론트엔드 앱이다.
-- 첫 구현 우선순위는 백엔드 job API 자체가 아니라, 그 API를 사용하는 전체 앱 골격과 인증/온보딩/플랜 생성 흐름이다.
-- 근거:
-  - `api-spec.md`가 Flutter 앱이 붙을 단일 계약이다.
-  - 사용자 결정: mock-first 취소, 처음부터 실백엔드 연동.
-  - 사용자 결정: 전체 화면 범위, 자동 로그인/refresh token 포함, iOS/Android 대상.
+- 인증:
+  - 회원가입
+  - 로그인
+  - 세션 저장
+  - 앱 시작 시 refresh + `GET /users/me`
+  - 로그아웃
+- 온보딩:
+  - study profile
+  - exam plan
+  - subject scope
+- 플랜 생성:
+  - `POST /plan-generation-jobs`
+  - `GET /plan-generation-jobs/{jobId}`
+  - 진행 중 `jobId` 복구
+- 메인 앱:
+  - dashboard
+  - today plan detail
+  - today plan edit / toggle / complete
+  - history
+  - my page / study settings / notification settings / account settings
 
-## 구현 전 확인 필요 사항
+## 백엔드 연동 시 중요 계약 메모
 
-- Flutter 앱을 이 저장소에 새로 스캐폴딩해야 한다.
-- 승인된 설계는 `docs/superpowers/specs/2026-06-12-flutter-app-design.md`를 기준으로 한다.
-- 현재 구현 계획은 `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`를 기준으로 한다.
-- 확정된 핵심 결정:
-  - `feature-first + core` 아키텍처
-  - 실백엔드 연동
-  - `api-spec.md` 기준 DTO 설계
-  - 자동 로그인 + refresh token
-  - UI는 구조 유지, 시각은 재해석
+- 앱은 mock 없이 실백엔드 연동 기준으로 작성됐다.
+- `API_BASE_URL`은 필수다. 누락되면 앱 부트스트랩이 `StateError`로 종료된다.
+- subject scope 저장 후 이를 다시 읽는 API가 현재 범위에 없다. 그래서 plan generation request는 subject scope 화면에서 들고 있는 메모리 입력값으로 즉시 만든다.
+- plan generation request 매핑 가정:
+  - `priority -> difficulty`
+  - `priority == HIGH -> difficultSubjects`
+  - `usualStudyHoursPerDay -> dailyMaxStudyHours`
+- exam plan 저장 응답이 부분 필드만 돌려줄 수 있어서, 클라이언트는 기존 study profile 정보와 병합해 세션 스냅샷을 유지한다.
+- `GET /users/me`에는 notification settings가 없다. 그래서 알림 설정 화면은 현재 서버 hydrate 없이 기본값으로 열리고 저장만 수행한다.
+- 로그아웃 UX는 서버 응답보다 로컬 세션 정리를 우선한다.
+- today plan edit 화면은 현재 `TodayPlan` route extra를 전제로 한다. 직접 deep link로 진입하면 fallback 화면이 나온다.
 
-## 구현 시작 순서 메모
+## 남은 리스크
 
-- 1단계: Flutter 프로젝트 생성
-- 2단계: `go_router`, `riverpod`, `dio`, secure storage 등 코어 세팅
-- 3단계: 인증 플로우
-- 4단계: 온보딩, 시험 계획/범위 입력
-- 5단계: plan generation loading
-- 6단계: dashboard, today plan, history, my page
+- 실제 백엔드 응답이 `api-spec.md`와 다르면 DTO 파싱 수정이 필요할 수 있다.
+- notification settings 조회 API가 생기기 전까지는 알림 설정 화면이 서버 현재값을 보여주지 못한다.
+- subject scope 조회 API가 생기기 전까지는 subject scope 단계 재진입 복원력이 제한적이다.
+- 현재 작업 경로가 `Desktop` 아래라서, iOS simulator 빌드 시 macOS File Provider xattr 때문에 `resource fork, Finder information, or similar detritus not allowed` 에러가 날 수 있다. 이 경우 저장소를 비동기화 경로 밖으로 옮겨 다시 빌드한다.
 
 ## 2026-06-12 Flutter 스캐폴딩 메모
 
@@ -71,8 +80,16 @@
 ## 다음 턴 시작 체크
 
 - 컨텍스트 복구 시 `codex-notes.md`를 먼저 읽고, 그다음 이 파일을 읽는다.
-- 그다음 `api-spec.md`와 `docs/superpowers/specs/2026-06-12-flutter-app-design.md` 확인
-- 구현 전에는 현재 브랜치 상태와 Flutter SDK 사용 가능 여부 확인
+- 그다음 `README.md`, `api-spec.md`, `docs/superpowers/specs/2026-06-12-flutter-app-design.md` 확인
+- 작업 전에는 현재 브랜치 상태, `flutter analyze`, `flutter test` 기준 상태를 확인
+- 핵심 진입 파일:
+  - `lib/app/bootstrap/app_bootstrap.dart`
+  - `lib/app/router/app_router.dart`
+  - `lib/core/session/session_controller.dart`
+  - `lib/features/plan_generation/presentation/pages/plan_generation_loading_page.dart`
+  - `lib/features/dashboard/presentation/pages/home_page.dart`
+  - `lib/features/history/presentation/pages/history_page.dart`
+  - `lib/features/my_page/presentation/pages/my_page.dart`
 
 ## 2026-06-12 Task 4 인증 구현 메모
 
@@ -86,3 +103,15 @@
 - 세션 복구는 저장된 토큰만 읽고 끝내지 않고, `GET /users/me` 성공까지 포함해야 한다.
 - 라우팅 분기는 페이지 내부 네비게이션이 아니라 router redirect에서만 결정한다.
 - `jobId`가 남아 있으면 온보딩 미완료 사용자에 한해 plan generation loading으로 우선 복귀시킨다.
+
+## 2026-06-12 최종 구현 메모
+
+- 계획 문서의 Task 1-12 범위는 모두 구현됐다.
+- 최종 검증 기준 명령:
+  - `flutter analyze`
+  - `flutter test`
+- 문서 업데이트 대상:
+  - `README.md`
+  - `agent-notes.md`
+  - `codex-notes.md`
+  - `docs/superpowers/specs/2026-06-12-flutter-app-design.md`

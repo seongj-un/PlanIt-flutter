@@ -7,22 +7,14 @@ If context is reset, read this file first, then `agent-notes.md`.
 - Design spec: `docs/superpowers/specs/2026-06-12-flutter-app-design.md`
 - Implementation plan: `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`
 
-## Current Scaffold State
+## Current App State
 
-- Flutter project scaffolded in-place with `flutter create --platforms=ios,android --project-name planit_flutter .`
-- Package name used by Dart/Flutter: `planit_flutter`
-- Baseline `flutter test` passed immediately after scaffold generation
-
-## Replacement Targets Later
-
-- `lib/main.dart` - temporary scaffold baseline file
-- `test/widget_test.dart` - temporary scaffold baseline file
-- App dependencies and routing in later tasks via `pubspec.yaml` and supporting source files
-
-## Guardrails
-
-- Do not start Task 2 in this task.
-- Keep changes limited to the scaffold baseline unless the current task explicitly requires more.
+- Flutter app foundation and all planned feature areas are implemented on `feat/flutter-app-foundation`.
+- Package name: `planit_flutter`
+- Runtime requires `--dart-define=API_BASE_URL=<base-url>`.
+- Fresh verification target for completion is:
+  - `flutter analyze`
+  - `flutter test`
 
 ## 2026-06-12 Task 3 Core Session / Network Notes
 
@@ -121,3 +113,53 @@ If context is reset, read this file first, then `agent-notes.md`.
   - success/error snackbars from `TodayPlanController`
 - `TodayPlanController.toggleItem(...)` applies optimistic UI updates first, then reconciles with server counts and rolls back on failure.
 - `TodayPlanEditPage` is route-extra driven from the detail page using the current `TodayPlan`; if the route is opened without that context it shows a fallback error state.
+
+## 2026-06-12 Task 10 History Notes
+
+- Added `history` feature for:
+  - `GET /plans/history?month=yyyy-MM`
+  - `GET /plans/history/{date}`
+- `HistoryController` owns:
+  - initial current-month load
+  - previous/next month navigation
+  - selected date detail fetch
+- Router now mounts:
+  - `/history`
+  - `/history/:date`
+- `historyInitialMonthProvider` exists so tests can override the default month without time-coupled assertions.
+
+## 2026-06-12 Task 11 My Page Notes
+
+- Added `MyPageController` and pages for:
+  - profile summary
+  - study settings
+  - notification settings
+  - account settings
+  - logout
+- `UserRepository` now also handles:
+  - `PATCH /users/me/study-settings`
+  - `PATCH /users/me/notification-settings`
+  - `PATCH /users/me/account`
+  - `POST /auth/logout`
+- Important behavior:
+  - logout clears the local session even if the network request fails
+  - notification settings are not hydrated from `GET /users/me`, so the page uses local defaults on first open
+
+## 2026-06-12 Task 12 Completion Notes
+
+- Final docs to read first on context restore:
+  1. `codex-notes.md`
+  2. `agent-notes.md`
+  3. `README.md`
+  4. `api-spec.md`
+- Local iOS simulator build caveat:
+  - if the repo stays under `Desktop` / File Provider managed storage, Flutter iOS packaging can fail with `resource fork, Finder information, or similar detritus not allowed`
+  - this is a workspace-path issue, not a Dart app failure
+- Most important code entry points for follow-up work:
+  - `lib/app/bootstrap/app_bootstrap.dart`
+  - `lib/app/router/app_router.dart`
+  - `lib/core/session/session_controller.dart`
+  - `lib/features/plan_generation/presentation/pages/plan_generation_loading_page.dart`
+  - `lib/features/today_plan/presentation/controllers/today_plan_controller.dart`
+  - `lib/features/history/presentation/controllers/history_controller.dart`
+  - `lib/features/my_page/presentation/controllers/my_page_controller.dart`
