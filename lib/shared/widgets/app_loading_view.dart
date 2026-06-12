@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 
+import 'primary_button.dart';
+
 class AppLoadingView extends StatelessWidget {
-  const AppLoadingView({required this.title, required this.message, super.key});
+  const AppLoadingView({
+    required this.title,
+    required this.message,
+    this.isLoading = true,
+    this.actionLabel,
+    this.onAction,
+    super.key,
+  });
 
   final String title;
   final String message;
+  final bool isLoading;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -16,12 +28,14 @@ class AppLoadingView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(
-              width: 36,
-              height: 36,
-              child: CircularProgressIndicator(),
-            ),
-            const SizedBox(height: 20),
+            if (isLoading) ...[
+              const SizedBox(
+                width: 36,
+                height: 36,
+                child: CircularProgressIndicator(),
+              ),
+              const SizedBox(height: 20),
+            ],
             Text(
               title,
               style: textTheme.headlineSmall,
@@ -33,6 +47,10 @@ class AppLoadingView extends StatelessWidget {
               style: textTheme.bodyMedium,
               textAlign: TextAlign.center,
             ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 20),
+              PrimaryButton(label: actionLabel!, onPressed: onAction),
+            ],
           ],
         ),
       ),

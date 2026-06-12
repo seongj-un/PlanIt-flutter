@@ -15,6 +15,36 @@ final appRuntimeConfigProvider = Provider<AppRuntimeConfig>((ref) {
   throw UnimplementedError('Override appRuntimeConfigProvider in bootstrap().');
 });
 
+typedef SessionRestoreAction = Future<void> Function();
+
+final sessionRestoreActionProvider = Provider<SessionRestoreAction>((ref) {
+  Future<void>? inFlightRestore;
+
+  Future<void> restore() {
+    final current = inFlightRestore;
+    if (current != null) {
+      return current;
+    }
+
+    final future = ref
+        .read(sessionControllerProvider.notifier)
+        .restoreAuthenticatedSession(
+          refreshSession: (tokens) => ref
+              .read(sessionRefreshServiceProvider)
+              .refresh(refreshToken: tokens.refreshToken),
+          fetchCurrentUser: ref.read(userRepositoryProvider).getCurrentUser,
+        );
+
+    inFlightRestore = future.whenComplete(() {
+      inFlightRestore = null;
+    });
+
+    return inFlightRestore!;
+  }
+
+  return restore;
+});
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   ref.watch(appRuntimeConfigProvider);
   final refreshNotifier = ValueNotifier<int>(0);
@@ -22,23 +52,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshNotifier.value++;
   });
   ref.onDispose(refreshNotifier.dispose);
+  final restoreSession = ref.read(sessionRestoreActionProvider);
 
   Future<void>.microtask(() {
-    unawaited(
-      ref
-          .read(sessionControllerProvider.notifier)
-          .restoreAuthenticatedSession(
-            refreshSession: (tokens) => ref
-                .read(sessionRefreshServiceProvider)
-                .refresh(refreshToken: tokens.refreshToken),
-            fetchCurrentUser: ref.read(userRepositoryProvider).getCurrentUser,
-          ),
-    );
+    unawaited(restoreSession());
   });
 
   final router = AppRouter.createRouter(
     refreshListenable: refreshNotifier,
     sessionSnapshotProvider: () => ref.read(sessionControllerProvider),
+    retrySessionRestore: restoreSession,
   );
   ref.onDispose(router.dispose);
   return router;

@@ -129,6 +129,18 @@ void main() {
 
       expect(redirect, '/home');
     });
+
+    test('keeps restore-failed users with a session on splash', () {
+      final redirect = AppRedirectLogic.resolve(
+        location: '/',
+        session: SessionSnapshot(
+          status: SessionStatus.restoreFailed,
+          tokens: _tokens,
+        ),
+      );
+
+      expect(redirect, isNull);
+    });
   });
 }
 

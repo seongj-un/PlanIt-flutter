@@ -14,6 +14,7 @@ abstract final class AppRouter {
   static GoRouter createRouter({
     required Listenable refreshListenable,
     required SessionSnapshotProvider sessionSnapshotProvider,
+    required RetrySessionRestore retrySessionRestore,
   }) {
     return GoRouter(
       initialLocation: RoutePaths.splash,
@@ -27,8 +28,13 @@ abstract final class AppRouter {
       routes: [
         GoRoute(
           path: RoutePaths.splash,
-          pageBuilder: (context, state) =>
-              const NoTransitionPage(child: _SplashPlaceholderPage()),
+          pageBuilder: (context, state) => NoTransitionPage(
+            child: _SplashPlaceholderPage(
+              refreshListenable: refreshListenable,
+              sessionSnapshotProvider: sessionSnapshotProvider,
+              retrySessionRestore: retrySessionRestore,
+            ),
+          ),
         ),
         GoRoute(
           path: RoutePaths.welcome,
@@ -133,16 +139,44 @@ abstract final class AppRouter {
 }
 
 typedef SessionSnapshotProvider = SessionSnapshot Function();
+typedef RetrySessionRestore = Future<void> Function();
 
 class _SplashPlaceholderPage extends StatelessWidget {
-  const _SplashPlaceholderPage();
+  const _SplashPlaceholderPage({
+    required this.refreshListenable,
+    required this.sessionSnapshotProvider,
+    required this.retrySessionRestore,
+  });
+
+  final Listenable refreshListenable;
+  final SessionSnapshotProvider sessionSnapshotProvider;
+  final RetrySessionRestore retrySessionRestore;
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: AppLoadingView(
-        title: 'Splash',
-        message: 'Preparing your study plan...',
+    return Scaffold(
+      body: AnimatedBuilder(
+        animation: refreshListenable,
+        builder: (context, _) {
+          final session = sessionSnapshotProvider();
+          if (session.status == SessionStatus.restoreFailed &&
+              session.hasSession) {
+            return AppLoadingView(
+              title: 'Splash',
+              message: 'We could not restore your session. Try again.',
+              isLoading: false,
+              actionLabel: 'Retry',
+              onAction: () {
+                retrySessionRestore();
+              },
+            );
+          }
+
+          return const AppLoadingView(
+            title: 'Splash',
+            message: 'Preparing your study plan...',
+          );
+        },
       ),
     );
   }
