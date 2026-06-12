@@ -23,3 +23,16 @@ If context is reset, read this file first, then `agent-notes.md`.
 
 - Do not start Task 2 in this task.
 - Keep changes limited to the scaffold baseline unless the current task explicitly requires more.
+
+## 2026-06-12 Task 3 Core Session / Network Notes
+
+- Core session state now lives in `lib/core/session/` with `SessionTokens`, `SessionSnapshot`, `SessionRepository`, and `SessionController`.
+- Platform storage is kept behind abstractions in `lib/core/storage/`:
+  - `SecureStorageService` stores `accessToken`, `refreshToken`, `expiresAt`
+  - `PreferencesService` stores the in-progress `jobId`
+- Common API envelope parsing is in `lib/core/network/api_response.dart`, including `fieldErrors` mapping to `ApiFieldError`.
+- `AuthInterceptor` injects `Authorization` headers and retries one failed request after refresh.
+- Concurrent `401` refreshes are deduplicated by `RefreshCoordinator`, so later auth/onboarding repositories should share the same core `Dio` instance instead of creating their own.
+- Regression tests added:
+  - `test/core/session/session_controller_test.dart`
+  - `test/core/network/auth_interceptor_test.dart`
