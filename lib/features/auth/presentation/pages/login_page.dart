@@ -92,6 +92,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
                       ],
+                      if (state.isSuccess) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          '로그인되었습니다.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       PrimaryButton(
                         label: 'Log In',
@@ -117,15 +126,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _submit(LoginController controller) async {
-    final success = await controller.submit(
+    await controller.submit(
       email: _emailController.text,
       password: _passwordController.text,
     );
-
-    if (!mounted || !success) {
-      return;
-    }
-
-    context.go(RoutePaths.home);
   }
 }

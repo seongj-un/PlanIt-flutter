@@ -104,6 +104,15 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
                           ),
                         ),
                       ],
+                      if (state.isSuccess) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          '회원가입이 완료되었습니다.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.primary,
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 24),
                       PrimaryButton(
                         label: 'Create Account',
@@ -129,16 +138,10 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
   }
 
   Future<void> _submit(SignupController controller) async {
-    final success = await controller.submit(
+    await controller.submit(
       name: _nameController.text,
       email: _emailController.text,
       password: _passwordController.text,
     );
-
-    if (!mounted || !success) {
-      return;
-    }
-
-    context.go(RoutePaths.home);
   }
 }

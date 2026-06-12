@@ -4,6 +4,8 @@ import '../../../../core/network/api_response.dart';
 import '../../data/repository/auth_repository_impl.dart';
 import '../../domain/repository/auth_repository.dart';
 
+const _unexpectedAuthErrorMessage = '잠시 후 다시 시도해주세요.';
+
 final loginControllerProvider =
     StateNotifierProvider.autoDispose<LoginController, LoginFormState>((ref) {
       return LoginController(ref.watch(authRepositoryProvider));
@@ -35,8 +37,8 @@ class LoginController extends StateNotifier<LoginFormState> {
     } on ApiErrorException catch (error) {
       state = LoginFormState.fromApiError(error);
       return false;
-    } catch (error) {
-      state = LoginFormState(formError: error.toString());
+    } catch (_) {
+      state = const LoginFormState(formError: _unexpectedAuthErrorMessage);
       return false;
     }
   }

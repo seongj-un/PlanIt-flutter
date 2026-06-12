@@ -9,6 +9,28 @@ import 'package:planit_flutter/features/auth/presentation/pages/signup_page.dart
 import 'package:planit_flutter/shared/models/api_field_error.dart';
 
 void main() {
+  testWidgets('keeps route policy out of the signup page on success', (
+    tester,
+  ) async {
+    final repository = _FakeAuthRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: SignUpPage()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).at(0), '김민지');
+    await tester.enterText(find.byType(TextField).at(1), 'minji@example.com');
+    await tester.enterText(find.byType(TextField).at(2), 'P@ssw0rd!');
+    await tester.tap(find.text('Create Account'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('회원가입이 완료되었습니다.'), findsOneWidget);
+    expect(find.text('Create your account'), findsOneWidget);
+  });
+
   testWidgets('renders server field errors below the matching signup fields', (
     tester,
   ) async {

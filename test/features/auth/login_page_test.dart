@@ -9,6 +9,27 @@ import 'package:planit_flutter/features/auth/presentation/pages/login_page.dart'
 import 'package:planit_flutter/shared/models/api_field_error.dart';
 
 void main() {
+  testWidgets('keeps route policy out of the login page on success', (
+    tester,
+  ) async {
+    final repository = _FakeAuthRepository();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [authRepositoryProvider.overrideWithValue(repository)],
+        child: const MaterialApp(home: LoginPage()),
+      ),
+    );
+
+    await tester.enterText(find.byType(TextField).at(0), 'minji@example.com');
+    await tester.enterText(find.byType(TextField).at(1), 'P@ssw0rd!');
+    await tester.tap(find.text('Log In'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('로그인되었습니다.'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+  });
+
   testWidgets('renders server field errors below the matching login fields', (
     tester,
   ) async {
