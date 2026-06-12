@@ -66,7 +66,8 @@ abstract final class AppRedirectLogic {
   static bool _isAllowedOnboardingRoute(String location) {
     return location == RoutePaths.studyProfile ||
         location == RoutePaths.examPlan ||
-        location == RoutePaths.subjectScope;
+        location == RoutePaths.subjectScope ||
+        location == RoutePaths.planGenerationLoading;
   }
 
   static bool _isPublicOnlyRoute(String location) {

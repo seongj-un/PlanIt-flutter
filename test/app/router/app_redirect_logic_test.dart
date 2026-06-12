@@ -112,6 +112,27 @@ void main() {
       },
     );
 
+    test(
+      'allows incomplete onboarding users to stay on plan generation loading route before job id exists',
+      () {
+        final redirect = AppRedirectLogic.resolve(
+          location: '/plan-generation-loading',
+          session: SessionSnapshot(
+            status: SessionStatus.authenticated,
+            tokens: _tokens,
+            userProfile: const UserProfile(
+              id: 1,
+              name: '김민지',
+              email: 'minji@example.com',
+              onboardingCompleted: false,
+            ),
+          ),
+        );
+
+        expect(redirect, isNull);
+      },
+    );
+
     test('redirects authenticated users away from auth routes to home', () {
       final redirect = AppRedirectLogic.resolve(
         location: '/login',
