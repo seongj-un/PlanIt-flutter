@@ -50,3 +50,15 @@ If context is reset, read this file first, then `agent-notes.md`.
   - success response embeds `user` and `tokens`
 - Session persistence should reuse the existing `SessionController`/`SessionRepository`; do not add route guards or `GET /users/me` in this task.
 - Placeholder auth routes in `app_router.dart` should be replaced with real pages, but post-auth navigation should stay minimal until Task 5 introduces redirect logic.
+
+## 2026-06-12 Task 5 Session Restore And Router Guard Notes
+
+- Current route policy is router-driven via `lib/app/router/app_redirect_logic.dart`; auth pages should not push protected routes directly.
+- `SessionSnapshot` now needs to carry restore status and current user state, not just tokens and `jobId`.
+- Automatic session restoration should resolve from splash by reading persisted tokens, calling `GET /users/me`, and clearing local session on failure.
+- Redirect priority should stay:
+  1. splash while restore is unresolved
+  2. welcome for unauthenticated users
+  3. plan generation loading when `jobId` exists for an onboarding-incomplete user
+  4. study profile onboarding when authenticated but incomplete
+  5. main shell for authenticated + onboarding complete

@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:planit_flutter/core/session/session_controller.dart';
 import 'package:planit_flutter/core/session/session_repository.dart';
+import 'package:planit_flutter/core/session/session_snapshot.dart';
 import 'package:planit_flutter/core/session/session_tokens.dart';
 import 'package:planit_flutter/core/storage/preferences_service.dart';
 import 'package:planit_flutter/core/storage/secure_storage_service.dart';
+import 'package:planit_flutter/features/my_page/domain/model/user_profile.dart';
 
 void main() {
   group('SessionController', () {
@@ -31,6 +33,7 @@ void main() {
       expect(snapshot.activeJobId, 'job-123');
       expect(controller.state.tokens, tokens);
       expect(controller.state.activeJobId, 'job-123');
+      expect(controller.state.status, SessionStatus.restoring);
     });
 
     test('save persists tokens and clear removes the session', () async {
@@ -59,7 +62,75 @@ void main() {
       expect(await preferences.readActiveJobId(), isNull);
       expect(controller.state.isAuthenticated, isFalse);
       expect(controller.state.activeJobId, isNull);
+      expect(controller.state.status, SessionStatus.unauthenticated);
     });
+
+    test(
+      'restoreAuthenticatedSession clears persisted session on failure',
+      () async {
+        final secureStorage = _InMemorySecureStorageService();
+        final preferences = _InMemoryPreferencesService();
+        final repository = SessionRepository(
+          secureStorage: secureStorage,
+          preferencesService: preferences,
+        );
+        final controller = SessionController(repository);
+        final tokens = SessionTokens(
+          accessToken: 'persisted-access',
+          refreshToken: 'persisted-refresh',
+          expiresAt: DateTime.utc(2026, 6, 12, 11),
+        );
+
+        await secureStorage.saveTokens(tokens);
+        await preferences.saveActiveJobId('job-123');
+
+        final snapshot = await controller.restoreAuthenticatedSession(
+          fetchCurrentUser: () async => throw Exception('unauthorized'),
+        );
+
+        expect(snapshot.status, SessionStatus.unauthenticated);
+        expect(snapshot.tokens, isNull);
+        expect(snapshot.activeJobId, isNull);
+        expect(await secureStorage.readTokens(), isNull);
+        expect(await preferences.readActiveJobId(), isNull);
+      },
+    );
+
+    test(
+      'restoreAuthenticatedSession completes session with current user',
+      () async {
+        final secureStorage = _InMemorySecureStorageService();
+        final preferences = _InMemoryPreferencesService();
+        final repository = SessionRepository(
+          secureStorage: secureStorage,
+          preferencesService: preferences,
+        );
+        final controller = SessionController(repository);
+        final tokens = SessionTokens(
+          accessToken: 'persisted-access',
+          refreshToken: 'persisted-refresh',
+          expiresAt: DateTime.utc(2026, 6, 12, 11),
+        );
+        const userProfile = UserProfile(
+          id: 1,
+          name: '김민지',
+          email: 'minji@example.com',
+          onboardingCompleted: false,
+        );
+
+        await secureStorage.saveTokens(tokens);
+        await preferences.saveActiveJobId('job-123');
+
+        final snapshot = await controller.restoreAuthenticatedSession(
+          fetchCurrentUser: () async => userProfile,
+        );
+
+        expect(snapshot.status, SessionStatus.authenticated);
+        expect(snapshot.tokens, tokens);
+        expect(snapshot.activeJobId, 'job-123');
+        expect(snapshot.userProfile, userProfile);
+      },
+    );
   });
 }
 

@@ -1,17 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/session/session_snapshot.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/auth/presentation/pages/signup_page.dart';
 import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
+import 'app_redirect_logic.dart';
 import 'main_shell.dart';
 import 'route_paths.dart';
 
 abstract final class AppRouter {
-  static GoRouter createRouter() {
+  static GoRouter createRouter({
+    required Listenable refreshListenable,
+    required SessionSnapshotProvider sessionSnapshotProvider,
+  }) {
     return GoRouter(
       initialLocation: RoutePaths.splash,
+      refreshListenable: refreshListenable,
+      redirect: (context, state) {
+        return AppRedirectLogic.resolve(
+          location: state.matchedLocation,
+          session: sessionSnapshotProvider(),
+        );
+      },
       routes: [
         GoRoute(
           path: RoutePaths.splash,
@@ -32,6 +44,42 @@ abstract final class AppRouter {
           path: RoutePaths.signUp,
           pageBuilder: (context, state) =>
               const MaterialPage(child: SignUpPage()),
+        ),
+        GoRoute(
+          path: RoutePaths.studyProfile,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: _RoutePlaceholderPage(
+              title: 'Study Profile',
+              subtitle: 'Study profile onboarding placeholder.',
+            ),
+          ),
+        ),
+        GoRoute(
+          path: RoutePaths.examPlan,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: _RoutePlaceholderPage(
+              title: 'Exam Plan',
+              subtitle: 'Exam plan onboarding placeholder.',
+            ),
+          ),
+        ),
+        GoRoute(
+          path: RoutePaths.subjectScope,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: _RoutePlaceholderPage(
+              title: 'Subject Scope',
+              subtitle: 'Subject scope onboarding placeholder.',
+            ),
+          ),
+        ),
+        GoRoute(
+          path: RoutePaths.planGenerationLoading,
+          pageBuilder: (context, state) => const NoTransitionPage(
+            child: _RoutePlaceholderPage(
+              title: 'Plan Generation',
+              subtitle: 'Plan generation loading placeholder.',
+            ),
+          ),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {
@@ -83,6 +131,8 @@ abstract final class AppRouter {
     );
   }
 }
+
+typedef SessionSnapshotProvider = SessionSnapshot Function();
 
 class _SplashPlaceholderPage extends StatelessWidget {
   const _SplashPlaceholderPage();

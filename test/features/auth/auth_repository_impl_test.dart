@@ -9,6 +9,7 @@ import 'package:planit_flutter/features/auth/data/dto/auth_response_dto.dart';
 import 'package:planit_flutter/features/auth/data/dto/login_request_dto.dart';
 import 'package:planit_flutter/features/auth/data/dto/signup_request_dto.dart';
 import 'package:planit_flutter/features/auth/data/repository/auth_repository_impl.dart';
+import 'package:planit_flutter/features/my_page/domain/model/user_profile.dart';
 
 void main() {
   group('AuthRepositoryImpl', () {
@@ -48,6 +49,15 @@ void main() {
           accessToken: 'login-access-token',
           refreshToken: 'login-refresh-token',
           expiresAt: DateTime.utc(2026, 6, 12, 1, 0, 0),
+        ),
+      );
+      expect(
+        controller.state.userProfile,
+        const UserProfile(
+          id: 1,
+          name: '김민지',
+          email: null,
+          onboardingCompleted: true,
         ),
       );
       expect(controller.state.activeJobId, 'job-123');
@@ -97,6 +107,15 @@ void main() {
           accessToken: 'signup-access-token',
           refreshToken: 'signup-refresh-token',
           expiresAt: DateTime.utc(2026, 6, 12, 3, 30, 0),
+        ),
+      );
+      expect(
+        controller.state.userProfile,
+        const UserProfile(
+          id: 2,
+          name: '김민지',
+          email: 'minji@example.com',
+          onboardingCompleted: false,
         ),
       );
     });

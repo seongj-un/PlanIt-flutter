@@ -79,3 +79,10 @@
 - auth 구현은 `lib/features/auth/**`와 공통 auth 입력/버튼 위젯, 그리고 `app_router.dart`의 auth route 교체까지만 다룬다.
 - 로그인/회원가입 성공 시 현재 단계에서는 토큰 저장과 세션 반영만 보장하고, post-auth redirect 정교화는 Task 5에서 처리한다.
 - 서버 `fieldErrors`는 controller 상태로 필드별 매핑해 각 입력창의 `errorText`로 렌더링한다.
+
+## 2026-06-12 Task 5 세션 복구/라우터 가드 메모
+
+- 이 단계부터 앱 시작 시 splash에서 세션 복구를 완료한 뒤 라우팅한다.
+- 세션 복구는 저장된 토큰만 읽고 끝내지 않고, `GET /users/me` 성공까지 포함해야 한다.
+- 라우팅 분기는 페이지 내부 네비게이션이 아니라 router redirect에서만 결정한다.
+- `jobId`가 남아 있으면 온보딩 미완료 사용자에 한해 plan generation loading으로 우선 복귀시킨다.

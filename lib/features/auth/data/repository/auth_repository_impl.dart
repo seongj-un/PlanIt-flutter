@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/network_providers.dart';
 import '../../../../core/session/session_controller.dart';
+import '../../../my_page/domain/model/user_profile.dart';
 import '../../domain/model/auth_user.dart';
 import '../../domain/repository/auth_repository.dart';
 import '../datasource/auth_remote_data_source.dart';
@@ -60,6 +61,16 @@ class AuthRepositoryImpl implements AuthRepository {
     return _sessionController.save(
       tokens: response.toSessionTokens(_now().toUtc()),
       activeJobId: _sessionController.state.activeJobId,
+      userProfile: _toUserProfile(response.toDomain()),
+    );
+  }
+
+  UserProfile _toUserProfile(AuthUser user) {
+    return UserProfile(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      onboardingCompleted: user.onboardingCompleted,
     );
   }
 }

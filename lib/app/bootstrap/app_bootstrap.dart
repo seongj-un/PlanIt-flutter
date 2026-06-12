@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/api_config.dart';
 import '../../core/network/network_providers.dart';
+import '../../features/my_page/data/repository/user_repository_impl.dart';
 import '../router/app_router.dart';
 import '../theme/app_theme.dart';
 
@@ -14,7 +17,26 @@ final appRuntimeConfigProvider = Provider<AppRuntimeConfig>((ref) {
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   ref.watch(appRuntimeConfigProvider);
-  final router = AppRouter.createRouter();
+  final refreshNotifier = ValueNotifier<int>(0);
+  ref.listen(sessionControllerProvider, (_, __) {
+    refreshNotifier.value++;
+  });
+  ref.onDispose(refreshNotifier.dispose);
+
+  Future<void>.microtask(() {
+    unawaited(
+      ref
+          .read(sessionControllerProvider.notifier)
+          .restoreAuthenticatedSession(
+            fetchCurrentUser: ref.read(userRepositoryProvider).getCurrentUser,
+          ),
+    );
+  });
+
+  final router = AppRouter.createRouter(
+    refreshListenable: refreshNotifier,
+    sessionSnapshotProvider: () => ref.read(sessionControllerProvider),
+  );
   ref.onDispose(router.dispose);
   return router;
 });
