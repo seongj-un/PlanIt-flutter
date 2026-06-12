@@ -36,6 +36,7 @@
 
 - Flutter 앱을 이 저장소에 새로 스캐폴딩해야 한다.
 - 승인된 설계는 `docs/superpowers/specs/2026-06-12-flutter-app-design.md`를 기준으로 한다.
+- 현재 구현 계획은 `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`를 기준으로 한다.
 - 확정된 핵심 결정:
   - `feature-first + core` 아키텍처
   - 실백엔드 연동
