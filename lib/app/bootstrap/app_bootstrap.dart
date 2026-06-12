@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/network/api_config.dart';
 import '../router/app_router.dart';
 import '../theme/app_theme.dart';
 
-const _defaultApiBaseUrl = 'http://localhost:8080';
-
 final appRuntimeConfigProvider = Provider<AppRuntimeConfig>((ref) {
   throw UnimplementedError('Override appRuntimeConfigProvider in bootstrap().');
+});
+
+final appRouterProvider = Provider<GoRouter>((ref) {
+  ref.watch(appRuntimeConfigProvider);
+  final router = AppRouter.createRouter();
+  ref.onDispose(router.dispose);
+  return router;
 });
 
 void bootstrap() {
@@ -21,16 +28,18 @@ void bootstrap() {
   );
 }
 
-class PlanItApp extends StatelessWidget {
+class PlanItApp extends ConsumerWidget {
   const PlanItApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final router = ref.watch(appRouterProvider);
+
     return MaterialApp.router(
       title: 'PlanIt',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
-      routerConfig: AppRouter.createRouter(),
+      routerConfig: router,
     );
   }
 }
@@ -39,20 +48,8 @@ class AppRuntimeConfig {
   const AppRuntimeConfig({required this.apiConfig});
 
   factory AppRuntimeConfig.fromEnvironment() {
-    return const AppRuntimeConfig(apiConfig: ApiConfig.fromEnvironment());
+    return AppRuntimeConfig(apiConfig: ApiConfig.fromEnvironment());
   }
 
   final ApiConfig apiConfig;
-}
-
-class ApiConfig {
-  const ApiConfig({required this.baseUrl});
-
-  const ApiConfig.fromEnvironment()
-    : baseUrl = const String.fromEnvironment(
-        'API_BASE_URL',
-        defaultValue: _defaultApiBaseUrl,
-      );
-
-  final String baseUrl;
 }
