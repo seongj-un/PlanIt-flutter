@@ -53,6 +53,13 @@
 - 5단계: plan generation loading
 - 6단계: dashboard, today plan, history, my page
 
+## 2026-06-12 Flutter 스캐폴딩 메모
+
+- Flutter 스캐폴딩을 시작했다.
+- 이번 작업의 기준 문서는 `docs/superpowers/specs/2026-06-12-flutter-app-design.md`와 `docs/superpowers/plans/2026-06-12-flutter-app-foundation.md`다.
+- 생성 직후 기본 템플릿은 카운터 앱이며, 이후 교체 대상의 핵심 파일은 `lib/main.dart`와 `test/widget_test.dart`다.
+- `pubspec.yaml`, `analysis_options.yaml`, `.gitignore`는 Flutter 기본 스캐폴드 상태를 기준으로 이후 Task 2에서 확장한다.
+
 ## 다음 턴 시작 체크
 
 - 이 파일 먼저 읽기
