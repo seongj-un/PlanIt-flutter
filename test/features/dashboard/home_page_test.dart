@@ -131,4 +131,25 @@ class _FakeTodayPlanRepository implements TodayPlanRepository {
       sproutPerPlanItem: 1,
     );
   }
+
+  @override
+  Future<TodayPlanCompletionResult> completeTodayPlan() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<TodayPlanToggleResult> togglePlanItem({
+    required int planItemId,
+    required bool completed,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<TodayPlanUpdateResult> updateTodayPlan({
+    required List<TodayPlanEditableItem> items,
+    required List<int> deletedPlanItemIds,
+  }) {
+    throw UnimplementedError();
+  }
 }

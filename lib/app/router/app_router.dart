@@ -11,7 +11,9 @@ import '../../features/onboarding/presentation/pages/study_profile_page.dart';
 import '../../features/dashboard/presentation/pages/home_page.dart';
 import '../../features/plan_generation/domain/model/plan_generation_input.dart';
 import '../../features/plan_generation/presentation/pages/plan_generation_loading_page.dart';
+import '../../features/today_plan/domain/model/today_plan.dart';
 import '../../features/today_plan/presentation/pages/today_plan_detail_page.dart';
+import '../../features/today_plan/presentation/pages/today_plan_edit_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
 import 'app_redirect_logic.dart';
 import 'main_shell.dart';
@@ -101,6 +103,18 @@ abstract final class AppRouter {
                       pageBuilder: (context, state) => const MaterialPage(
                         child: TodayPlanDetailPage(),
                       ),
+                      routes: [
+                        GoRoute(
+                          path: 'edit',
+                          pageBuilder: (context, state) => MaterialPage(
+                            child: TodayPlanEditPage(
+                              initialPlan: state.extra is TodayPlan
+                                  ? state.extra as TodayPlan
+                                  : null,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

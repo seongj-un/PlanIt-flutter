@@ -107,3 +107,17 @@ If context is reset, read this file first, then `agent-notes.md`.
   - `SectionCard`
   - `ProgressSummaryCard`
   - `PlanItemTile`
+
+## 2026-06-12 Task 9 Today Plan Edit Notes
+
+- `today_plan` repository now also covers write operations:
+  - bulk update
+  - item toggle
+  - completion
+- Route added: `RoutePaths.todayPlanEdit = /home/today-plan/edit`
+- `TodayPlanDetailPage` now owns:
+  - checkbox toggle dispatch
+  - completion button dispatch
+  - success/error snackbars from `TodayPlanController`
+- `TodayPlanController.toggleItem(...)` applies optimistic UI updates first, then reconciles with server counts and rolls back on failure.
+- `TodayPlanEditPage` is route-extra driven from the detail page using the current `TodayPlan`; if the route is opened without that context it shows a fallback error state.

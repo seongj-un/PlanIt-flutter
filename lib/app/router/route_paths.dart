@@ -10,6 +10,7 @@ abstract final class RoutePaths {
 
   static const home = '/home';
   static const todayPlanDetail = '/home/today-plan';
+  static const todayPlanEdit = '/home/today-plan/edit';
   static const history = '/history';
   static const myPage = '/my-page';
 }

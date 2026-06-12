@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/router/route_paths.dart';
 import '../../../../shared/widgets/app_loading_view.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/plan_item_tile.dart';
+import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/progress_summary_card.dart';
 import '../../../dashboard/presentation/controllers/dashboard_controller.dart';
 import '../controllers/today_plan_controller.dart';
@@ -30,6 +33,26 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
     final state = ref.watch(todayPlanControllerProvider);
     final plan = state.plan;
     final progress = state.progress;
+
+    ref.listen<TodayPlanState>(todayPlanControllerProvider, (previous, next) {
+      if (!mounted) {
+        return;
+      }
+
+      if (previous?.errorMessage != next.errorMessage &&
+          next.errorMessage != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.errorMessage!)));
+      }
+
+      if (previous?.successMessage != next.successMessage &&
+          next.successMessage != null) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(next.successMessage!)));
+      }
+    });
 
     if (state.isLoading) {
       return const AppScaffold(
@@ -58,6 +81,14 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
 
     return AppScaffold(
       title: '오늘 플랜',
+      actions: [
+        TextButton(
+          onPressed: () {
+            context.go(RoutePaths.todayPlanEdit, extra: plan);
+          },
+          child: const Text('수정'),
+        ),
+      ],
       body: ListView(
         children: [
           Text(plan.planDate, style: Theme.of(context).textTheme.bodyMedium),
@@ -77,9 +108,29 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
                   '${item.studyMethod} · ${item.estimatedMinutes}분',
               statusLabel: item.priority,
               isCompleted: item.completed,
+              trailing: Checkbox(
+                value: item.completed,
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  ref.read(todayPlanControllerProvider.notifier).toggleItem(
+                    planItemId: item.planItemId,
+                    completed: value,
+                  );
+                },
+              ),
             ),
             const SizedBox(height: 10),
           ],
+          const SizedBox(height: 14),
+          PrimaryButton(
+            label: '오늘 플랜 완료하기',
+            isLoading: state.isCompleting,
+            onPressed: () {
+              ref.read(todayPlanControllerProvider.notifier).completeTodayPlan();
+            },
+          ),
         ],
       ),
     );
