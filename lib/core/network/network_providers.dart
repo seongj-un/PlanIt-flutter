@@ -13,6 +13,7 @@ import 'api_client.dart';
 import 'api_config.dart';
 import 'auth_interceptor.dart';
 import 'refresh_coordinator.dart';
+import 'session_refresh_service.dart';
 
 final apiConfigProvider = Provider<ApiConfig>((ref) {
   return ref.watch(appRuntimeConfigProvider).apiConfig;
@@ -60,18 +61,21 @@ final refreshDioProvider = Provider<Dio>((ref) {
   return Dio(ref.watch(apiConfigProvider).toBaseOptions());
 });
 
+final sessionRefreshServiceProvider = Provider<SessionRefreshService>((ref) {
+  return SessionRefreshService(refreshClient: ref.watch(refreshDioProvider));
+});
+
 final dioProvider = Provider<Dio>((ref) {
   final config = ref.watch(apiConfigProvider);
   final repository = ref.watch(sessionRepositoryProvider);
-  final refreshDio = ref.watch(refreshDioProvider);
   final dio = Dio(config.toBaseOptions());
 
   dio.interceptors.add(
     AuthInterceptor(
       client: dio,
-      refreshClient: refreshDio,
       sessionRepository: repository,
       refreshCoordinator: ref.watch(refreshCoordinatorProvider),
+      sessionRefreshService: ref.watch(sessionRefreshServiceProvider),
     ),
   );
 

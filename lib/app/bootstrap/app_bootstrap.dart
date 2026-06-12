@@ -28,6 +28,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ref
           .read(sessionControllerProvider.notifier)
           .restoreAuthenticatedSession(
+            refreshSession: (tokens) => ref
+                .read(sessionRefreshServiceProvider)
+                .refresh(refreshToken: tokens.refreshToken),
             fetchCurrentUser: ref.read(userRepositoryProvider).getCurrentUser,
           ),
     );

@@ -85,6 +85,7 @@ void main() {
         await preferences.saveActiveJobId('job-123');
 
         final snapshot = await controller.restoreAuthenticatedSession(
+          refreshSession: (tokens) async => throw Exception('refresh failed'),
           fetchCurrentUser: () async => throw Exception('unauthorized'),
         );
 
@@ -121,14 +122,33 @@ void main() {
         await secureStorage.saveTokens(tokens);
         await preferences.saveActiveJobId('job-123');
 
+        final steps = <String>[];
+        final refreshedTokens = SessionTokens(
+          accessToken: 'refreshed-access',
+          refreshToken: 'refreshed-refresh',
+          expiresAt: DateTime.utc(2026, 6, 12, 12),
+        );
+
         final snapshot = await controller.restoreAuthenticatedSession(
-          fetchCurrentUser: () async => userProfile,
+          refreshSession: (persistedTokens) async {
+            steps.add('refresh');
+            expect(persistedTokens, tokens);
+            expect(await secureStorage.readTokens(), tokens);
+            return refreshedTokens;
+          },
+          fetchCurrentUser: () async {
+            steps.add('fetch-user');
+            expect(await secureStorage.readTokens(), refreshedTokens);
+            return userProfile;
+          },
         );
 
         expect(snapshot.status, SessionStatus.authenticated);
-        expect(snapshot.tokens, tokens);
+        expect(snapshot.tokens, refreshedTokens);
         expect(snapshot.activeJobId, 'job-123');
         expect(snapshot.userProfile, userProfile);
+        expect(await secureStorage.readTokens(), refreshedTokens);
+        expect(steps, <String>['refresh', 'fetch-user']);
       },
     );
   });

@@ -6,9 +6,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:planit_flutter/core/error/app_exception.dart';
 import 'package:planit_flutter/core/network/api_client.dart';
-import 'package:planit_flutter/core/network/auth_interceptor.dart';
 import 'package:planit_flutter/core/network/api_response.dart';
+import 'package:planit_flutter/core/network/auth_interceptor.dart';
 import 'package:planit_flutter/core/network/refresh_coordinator.dart';
+import 'package:planit_flutter/core/network/session_refresh_service.dart';
 import 'package:planit_flutter/core/session/session_repository.dart';
 import 'package:planit_flutter/core/session/session_tokens.dart';
 import 'package:planit_flutter/core/storage/preferences_service.dart';
@@ -43,7 +44,9 @@ void main() {
           client: dio,
           sessionRepository: repository,
           refreshCoordinator: RefreshCoordinator(),
-          refreshClient: refreshClient,
+          sessionRefreshService: SessionRefreshService(
+            refreshClient: refreshClient,
+          ),
         ),
       );
       final apiClient = ApiClient(dio);
@@ -211,7 +214,9 @@ class _Harness {
         client: dio,
         sessionRepository: repository,
         refreshCoordinator: RefreshCoordinator(),
-        refreshClient: refreshClient,
+        sessionRefreshService: SessionRefreshService(
+          refreshClient: refreshClient,
+        ),
       ),
     );
     apiClient = ApiClient(dio);

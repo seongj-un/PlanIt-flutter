@@ -27,6 +27,8 @@ class SessionController extends StateNotifier<SessionSnapshot> {
   }
 
   Future<SessionSnapshot> restoreAuthenticatedSession({
+    required Future<SessionTokens> Function(SessionTokens tokens)
+    refreshSession,
     required Future<UserProfile> Function() fetchCurrentUser,
   }) async {
     state = state.copyWith(
@@ -46,6 +48,10 @@ class SessionController extends StateNotifier<SessionSnapshot> {
     );
 
     try {
+      final refreshedTokens = await refreshSession(snapshot.tokens!);
+      await _repository.saveTokens(refreshedTokens);
+      state = state.copyWith(tokens: refreshedTokens);
+
       final userProfile = await fetchCurrentUser();
       final latestTokens = await _repository.readTokens();
 
