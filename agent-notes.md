@@ -60,6 +60,14 @@
 - 생성 직후 기본 템플릿은 카운터 앱이며, `lib/main.dart`와 `test/widget_test.dart`는 의도적으로 남겨 둔 임시 스캐폴드 기준 파일이다.
 - `pubspec.yaml`, `analysis_options.yaml`, `.gitignore`는 Flutter 기본 스캐폴드 상태를 기준으로 이후 Task 2에서 확장한다.
 
+## 2026-06-12 Task 2 앱 파운데이션 메모
+
+- Task 2에서는 앱 부트스트랩, 라우터 셸, 테마, 공통 로딩 뷰, 공통 예외 타입까지 최소 골격을 세운다.
+- 현재 런타임 설정은 `--dart-define=API_BASE_URL=...`를 `AppRuntimeConfig`와 `ApiConfig`로 읽는 구조를 먼저 둔다.
+- 이 단계의 라우트는 모두 placeholder이며 실제 인증/세션 분기 로직은 아직 넣지 않는다.
+- 시작 검증 테스트는 `Splash` placeholder와 `"Preparing your study plan..."` 문구 노출 여부를 기준으로 한다.
+- 다음 작업자가 컨텍스트를 복구할 때는 `lib/app/bootstrap/app_bootstrap.dart`, `lib/app/router/app_router.dart`, `lib/app/theme/app_theme.dart`부터 읽으면 현재 앱 진입 구조를 빠르게 파악할 수 있다.
+
 ## 다음 턴 시작 체크
 
 - 컨텍스트 복구 시 `codex-notes.md`를 먼저 읽고, 그다음 이 파일을 읽는다.
