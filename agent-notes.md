@@ -73,3 +73,9 @@
 - 컨텍스트 복구 시 `codex-notes.md`를 먼저 읽고, 그다음 이 파일을 읽는다.
 - 그다음 `api-spec.md`와 `docs/superpowers/specs/2026-06-12-flutter-app-design.md` 확인
 - 구현 전에는 현재 브랜치 상태와 Flutter SDK 사용 가능 여부 확인
+
+## 2026-06-12 Task 4 인증 구현 메모
+
+- auth 구현은 `lib/features/auth/**`와 공통 auth 입력/버튼 위젯, 그리고 `app_router.dart`의 auth route 교체까지만 다룬다.
+- 로그인/회원가입 성공 시 현재 단계에서는 토큰 저장과 세션 반영만 보장하고, post-auth redirect 정교화는 Task 5에서 처리한다.
+- 서버 `fieldErrors`는 controller 상태로 필드별 매핑해 각 입력창의 `errorText`로 렌더링한다.

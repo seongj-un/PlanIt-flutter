@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/pages/login_page.dart';
+import '../../features/auth/presentation/pages/signup_page.dart';
+import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
 import 'main_shell.dart';
 import 'route_paths.dart';
@@ -17,30 +20,18 @@ abstract final class AppRouter {
         ),
         GoRoute(
           path: RoutePaths.welcome,
-          pageBuilder: (context, state) => const MaterialPage(
-            child: _RoutePlaceholderPage(
-              title: 'Welcome',
-              subtitle: 'Entry point for login and sign up.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: WelcomePage()),
         ),
         GoRoute(
           path: RoutePaths.login,
-          pageBuilder: (context, state) => const MaterialPage(
-            child: _RoutePlaceholderPage(
-              title: 'Login',
-              subtitle: 'Email and password form will be implemented next.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: LoginPage()),
         ),
         GoRoute(
           path: RoutePaths.signUp,
-          pageBuilder: (context, state) => const MaterialPage(
-            child: _RoutePlaceholderPage(
-              title: 'Sign Up',
-              subtitle: 'Account creation flow placeholder.',
-            ),
-          ),
+          pageBuilder: (context, state) =>
+              const MaterialPage(child: SignUpPage()),
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {

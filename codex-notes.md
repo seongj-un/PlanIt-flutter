@@ -40,3 +40,13 @@ If context is reset, read this file first, then `agent-notes.md`.
   - `test/core/session/session_controller_test.dart`
   - `test/core/network/auth_interceptor_test.dart`
   - `test/core/network/network_providers_test.dart`
+
+## 2026-06-12 Task 4 Auth Flow Notes
+
+- Scope for this task is limited to `lib/features/auth/**`, `lib/shared/widgets/app_text_field.dart`, `lib/shared/widgets/primary_button.dart`, auth widget tests, and minimal route wiring in `lib/app/router/app_router.dart`.
+- `api-spec.md` auth contract:
+  - `POST /auth/login` request: `email`, `password`
+  - `POST /auth/signup` request: `name`, `email`, `password`
+  - success response embeds `user` and `tokens`
+- Session persistence should reuse the existing `SessionController`/`SessionRepository`; do not add route guards or `GET /users/me` in this task.
+- Placeholder auth routes in `app_router.dart` should be replaced with real pages, but post-auth navigation should stay minimal until Task 5 introduces redirect logic.
