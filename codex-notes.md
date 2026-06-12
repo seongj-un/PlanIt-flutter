@@ -30,9 +30,13 @@ If context is reset, read this file first, then `agent-notes.md`.
 - Platform storage is kept behind abstractions in `lib/core/storage/`:
   - `SecureStorageService` stores `accessToken`, `refreshToken`, `expiresAt`
   - `PreferencesService` stores the in-progress `jobId`
+- Core infra providers are now synchronous after bootstrap resolves `SharedPreferences` once and overrides `sharedPreferencesInstanceProvider`.
+- `sessionControllerProvider` is a reactive `StateNotifierProvider<SessionController, SessionSnapshot>`, and imperative access should go through `sessionControllerProvider.notifier` or `sessionControllerNotifierProvider`.
 - Common API envelope parsing is in `lib/core/network/api_response.dart`, including `fieldErrors` mapping to `ApiFieldError`.
 - `AuthInterceptor` injects `Authorization` headers and retries one failed request after refresh.
+- Refresh failure or malformed refresh payloads now surface as explicit app exceptions instead of raw cast errors or collapsed unauthorized responses.
 - Concurrent `401` refreshes are deduplicated by `RefreshCoordinator`, so later auth/onboarding repositories should share the same core `Dio` instance instead of creating their own.
 - Regression tests added:
   - `test/core/session/session_controller_test.dart`
   - `test/core/network/auth_interceptor_test.dart`
+  - `test/core/network/network_providers_test.dart`

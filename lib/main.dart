@@ -1,5 +1,5 @@
 import 'app/bootstrap/app_bootstrap.dart';
 
-void main() {
-  bootstrap();
+Future<void> main() async {
+  await bootstrap();
 }

@@ -18,6 +18,7 @@ class AuthInterceptor extends Interceptor {
        _refreshCoordinator = refreshCoordinator;
 
   static const _retryKey = 'auth.retry';
+  static const _refreshPath = '/auth/refresh';
 
   final Dio _client;
   final Dio _refreshClient;
@@ -75,6 +76,17 @@ class AuthInterceptor extends Interceptor {
       );
       final response = await _client.fetch<Object?>(retryOptions);
       handler.resolve(response);
+    } on AppException catch (error) {
+      await _sessionRepository.clear();
+      handler.reject(
+        DioException(
+          requestOptions: requestOptions,
+          error: error,
+          response: err.response,
+          type: err.type,
+          message: error.message,
+        ),
+      );
     } catch (error) {
       await _sessionRepository.clear();
       handler.reject(
@@ -83,9 +95,7 @@ class AuthInterceptor extends Interceptor {
           error: error,
           response: err.response,
           type: err.type,
-          message: error is AppException
-              ? error.message
-              : 'Token refresh failed.',
+          message: 'Token refresh failed.',
         ),
       );
     }
@@ -112,8 +122,9 @@ class AuthInterceptor extends Interceptor {
 
   Future<SessionTokens> _refreshTokens(String refreshToken) async {
     final response = await _refreshClient.post<Object?>(
-      '/auth/refresh',
+      _refreshPath,
       data: <String, Object?>{'refreshToken': refreshToken},
+      options: Options(validateStatus: (_) => true),
     );
     final body = response.data;
     if (body is! Map<String, Object?>) {
@@ -127,17 +138,34 @@ class AuthInterceptor extends Interceptor {
       body,
       dataParser: (json) => json as Map<String, Object?>,
     );
+    if (apiResponse.success == false) {
+      throw ApiErrorException.fromPayload(
+        apiResponse.error ??
+            const ApiErrorPayload(
+              code: 'INVALID_API_RESPONSE',
+              message: 'Refresh response did not include an error payload.',
+            ),
+      );
+    }
+
     final data = apiResponse.requireData();
-    final accessToken = data['accessToken'] as String? ?? '';
-    final nextRefreshToken = data['refreshToken'] as String? ?? refreshToken;
-    final expiresIn = data['expiresIn'] as num? ?? 0;
+    final accessToken = _requireString(
+      data,
+      key: 'accessToken',
+      message: 'Refresh response is missing accessToken.',
+    );
+    final nextRefreshToken =
+        _readOptionalString(data, key: 'refreshToken') ?? refreshToken;
+    final expiresIn = _requireIntSeconds(
+      data,
+      key: 'expiresIn',
+      message: 'Refresh response is missing expiresIn.',
+    );
 
     return SessionTokens(
       accessToken: accessToken,
       refreshToken: nextRefreshToken,
-      expiresAt: DateTime.now().toUtc().add(
-        Duration(seconds: expiresIn.toInt()),
-      ),
+      expiresAt: DateTime.now().toUtc().add(Duration(seconds: expiresIn)),
     );
   }
 
@@ -147,6 +175,59 @@ class AuthInterceptor extends Interceptor {
   }
 
   bool _shouldSkipRefresh(RequestOptions options) {
-    return options.path == '/auth/refresh';
+    return _normalizePath(options.path) == _refreshPath;
+  }
+
+  String _normalizePath(String path) {
+    final parsed = Uri.tryParse(path);
+    if (parsed != null && parsed.hasScheme) {
+      return parsed.path;
+    }
+
+    return Uri.parse(path).path;
+  }
+
+  String _requireString(
+    Map<String, Object?> json, {
+    required String key,
+    required String message,
+  }) {
+    final value = json[key];
+    if (value is String && value.isNotEmpty) {
+      return value;
+    }
+
+    throw AppException(code: 'INVALID_API_RESPONSE', message: message);
+  }
+
+  String? _readOptionalString(
+    Map<String, Object?> json, {
+    required String key,
+  }) {
+    final value = json[key];
+    if (value == null) {
+      return null;
+    }
+    if (value is String && value.isNotEmpty) {
+      return value;
+    }
+
+    throw AppException(
+      code: 'INVALID_API_RESPONSE',
+      message: 'Refresh response field $key had an unexpected type.',
+    );
+  }
+
+  int _requireIntSeconds(
+    Map<String, Object?> json, {
+    required String key,
+    required String message,
+  }) {
+    final value = json[key];
+    if (value is num) {
+      return value.toInt();
+    }
+
+    throw AppException(code: 'INVALID_API_RESPONSE', message: message);
   }
 }

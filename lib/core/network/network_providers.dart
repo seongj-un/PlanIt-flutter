@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../app/bootstrap/app_bootstrap.dart';
 import '../session/session_controller.dart';
 import '../session/session_repository.dart';
+import '../session/session_snapshot.dart';
 import '../storage/preferences_service.dart';
 import '../storage/secure_storage_service.dart';
 import 'api_client.dart';
@@ -25,53 +26,44 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
   return FlutterSecureStorageService(ref.watch(flutterSecureStorageProvider));
 });
 
-final sharedPreferencesProvider = FutureProvider<SharedPreferences>((
-  ref,
-) async {
-  return SharedPreferences.getInstance();
-});
-
-final preferencesServiceProvider = FutureProvider<PreferencesService>((
-  ref,
-) async {
-  final preferences = await ref.watch(sharedPreferencesProvider.future);
-  return SharedPreferencesService(preferences);
-});
-
-final sessionRepositoryProvider = FutureProvider<SessionRepository>((
-  ref,
-) async {
-  final preferencesService = await ref.watch(preferencesServiceProvider.future);
-
-  return SessionRepository(
-    secureStorage: ref.watch(secureStorageServiceProvider),
-    preferencesService: preferencesService,
+final sharedPreferencesInstanceProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError(
+    'Override sharedPreferencesInstanceProvider during app bootstrap.',
   );
 });
 
-final sessionControllerProvider = FutureProvider<SessionController>((
-  ref,
-) async {
-  final repository = await ref.watch(sessionRepositoryProvider.future);
-  final controller = SessionController(repository);
-  ref.onDispose(controller.dispose);
-  return controller;
+final preferencesServiceProvider = Provider<PreferencesService>((ref) {
+  return SharedPreferencesService(ref.watch(sharedPreferencesInstanceProvider));
+});
+
+final sessionRepositoryProvider = Provider<SessionRepository>((ref) {
+  return SessionRepository(
+    secureStorage: ref.watch(secureStorageServiceProvider),
+    preferencesService: ref.watch(preferencesServiceProvider),
+  );
+});
+
+final sessionControllerProvider =
+    StateNotifierProvider<SessionController, SessionSnapshot>((ref) {
+      return SessionController(ref.watch(sessionRepositoryProvider));
+    });
+
+final sessionControllerNotifierProvider = Provider<SessionController>((ref) {
+  return ref.watch(sessionControllerProvider.notifier);
 });
 
 final refreshCoordinatorProvider = Provider<RefreshCoordinator>((ref) {
   return RefreshCoordinator();
 });
 
-final refreshDioProvider = FutureProvider<Dio>((ref) async {
-  final config = ref.watch(apiConfigProvider);
-
-  return Dio(config.toBaseOptions());
+final refreshDioProvider = Provider<Dio>((ref) {
+  return Dio(ref.watch(apiConfigProvider).toBaseOptions());
 });
 
-final dioProvider = FutureProvider<Dio>((ref) async {
+final dioProvider = Provider<Dio>((ref) {
   final config = ref.watch(apiConfigProvider);
-  final repository = await ref.watch(sessionRepositoryProvider.future);
-  final refreshDio = await ref.watch(refreshDioProvider.future);
+  final repository = ref.watch(sessionRepositoryProvider);
+  final refreshDio = ref.watch(refreshDioProvider);
   final dio = Dio(config.toBaseOptions());
 
   dio.interceptors.add(
@@ -86,7 +78,6 @@ final dioProvider = FutureProvider<Dio>((ref) async {
   return dio;
 });
 
-final apiClientProvider = FutureProvider<ApiClient>((ref) async {
-  final dio = await ref.watch(dioProvider.future);
-  return ApiClient(dio);
+final apiClientProvider = Provider<ApiClient>((ref) {
+  return ApiClient(ref.watch(dioProvider));
 });

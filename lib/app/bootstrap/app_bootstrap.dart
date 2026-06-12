@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/network/api_config.dart';
+import '../../core/network/network_providers.dart';
 import '../router/app_router.dart';
 import '../theme/app_theme.dart';
 
@@ -17,12 +19,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-void bootstrap() {
+Future<void> bootstrap() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final runtimeConfig = AppRuntimeConfig.fromEnvironment();
+  final sharedPreferences = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
-      overrides: [appRuntimeConfigProvider.overrideWithValue(runtimeConfig)],
+      overrides: [
+        appRuntimeConfigProvider.overrideWithValue(runtimeConfig),
+        sharedPreferencesInstanceProvider.overrideWithValue(sharedPreferences),
+      ],
       child: const PlanItApp(),
     ),
   );

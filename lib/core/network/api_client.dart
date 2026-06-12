@@ -127,12 +127,21 @@ class ApiClient {
   }
 
   AppException _mapDioException(DioException error) {
+    final nestedError = error.error;
+    if (nestedError is AppException) {
+      return nestedError;
+    }
+
     final data = error.response?.data;
     if (data is Map<String, Object?>) {
-      final apiResponse = ApiResponse<Object?>.fromJson(data);
-      final payload = apiResponse.error;
-      if (payload != null) {
-        return ApiErrorException.fromPayload(payload, cause: error);
+      try {
+        final apiResponse = ApiResponse<Object?>.fromJson(data);
+        final payload = apiResponse.error;
+        if (payload != null) {
+          return ApiErrorException.fromPayload(payload, cause: error);
+        }
+      } on AppException catch (appException) {
+        return appException;
       }
     }
 

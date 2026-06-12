@@ -4,8 +4,10 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:planit_flutter/core/error/app_exception.dart';
 import 'package:planit_flutter/core/network/api_client.dart';
 import 'package:planit_flutter/core/network/auth_interceptor.dart';
+import 'package:planit_flutter/core/network/api_response.dart';
 import 'package:planit_flutter/core/network/refresh_coordinator.dart';
 import 'package:planit_flutter/core/session/session_repository.dart';
 import 'package:planit_flutter/core/session/session_tokens.dart';
@@ -28,7 +30,10 @@ void main() {
         preferencesService: preferences,
       );
       final refreshGate = Completer<void>();
-      final adapter = _FakeBackendAdapter(refreshGate: refreshGate);
+      final adapter = _FakeBackendAdapter(
+        scenario: _FakeBackendScenario.successAfterRefresh,
+        refreshGate: refreshGate,
+      );
       final refreshClient = Dio(BaseOptions(baseUrl: 'https://api.test'))
         ..httpClientAdapter = adapter;
       final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
@@ -53,7 +58,9 @@ void main() {
       );
 
       await Future<void>.delayed(Duration.zero);
-      refreshGate.complete();
+      if (!refreshGate.isCompleted) {
+        refreshGate.complete();
+      }
 
       final responses = await Future.wait<Map<String, Object?>>([
         first,
@@ -76,7 +83,152 @@ void main() {
         'refreshed-access',
       );
     });
+
+    test('clears session when refresh request fails', () async {
+      final harness = _Harness(scenario: _FakeBackendScenario.refreshFails);
+
+      await expectLater(
+        harness.apiClient.get<Map<String, Object?>>(
+          '/protected',
+          parser: _mapParser,
+        ),
+        throwsA(
+          isA<ApiErrorException>().having(
+            (e) => e.code,
+            'code',
+            'REFRESH_REVOKED',
+          ),
+        ),
+      );
+
+      expect((await harness.repository.restore()).tokens, isNull);
+      expect(harness.adapter.refreshRequestCount, 1);
+    });
+
+    test('clears session when retried request still returns 401', () async {
+      final harness = _Harness(
+        scenario: _FakeBackendScenario.retryStillUnauthorized,
+      );
+
+      await expectLater(
+        harness.apiClient.get<Map<String, Object?>>(
+          '/protected',
+          parser: _mapParser,
+        ),
+        throwsA(
+          isA<ApiErrorException>().having(
+            (e) => e.code,
+            'code',
+            'UNAUTHORIZED',
+          ),
+        ),
+      );
+
+      expect((await harness.repository.restore()).tokens, isNull);
+      expect(harness.adapter.refreshRequestCount, 1);
+    });
+
+    test(
+      'does not attempt refresh when no refresh token is available',
+      () async {
+        final harness = _Harness(
+          scenario: _FakeBackendScenario.successAfterRefresh,
+          initialTokens: SessionTokens(
+            accessToken: 'expired-access',
+            refreshToken: '',
+            expiresAt: DateTime.utc(2026, 6, 12, 9),
+          ),
+        );
+
+        await expectLater(
+          harness.apiClient.get<Map<String, Object?>>(
+            '/protected',
+            parser: _mapParser,
+          ),
+          throwsA(
+            isA<ApiErrorException>().having(
+              (e) => e.code,
+              'code',
+              'UNAUTHORIZED',
+            ),
+          ),
+        );
+
+        expect(harness.adapter.refreshRequestCount, 0);
+        expect((await harness.repository.restore()).tokens, isNull);
+      },
+    );
+
+    test('turns malformed refresh payload into app exception', () async {
+      final harness = _Harness(
+        scenario: _FakeBackendScenario.malformedRefreshPayload,
+      );
+
+      await expectLater(
+        harness.apiClient.get<Map<String, Object?>>(
+          '/protected',
+          parser: _mapParser,
+        ),
+        throwsA(
+          isA<AppException>().having(
+            (e) => e.code,
+            'code',
+            'INVALID_API_RESPONSE',
+          ),
+        ),
+      );
+
+      expect(harness.adapter.refreshRequestCount, 1);
+      expect((await harness.repository.restore()).tokens, isNull);
+    });
   });
+}
+
+Map<String, Object?> _mapParser(Object? json) => json as Map<String, Object?>;
+
+class _Harness {
+  _Harness({
+    required _FakeBackendScenario scenario,
+    SessionTokens? initialTokens,
+  }) : adapter = _FakeBackendAdapter(scenario: scenario),
+       repository = SessionRepository(
+         secureStorage: _InMemorySecureStorageService(
+           initialTokens ??
+               SessionTokens(
+                 accessToken: 'expired-access',
+                 refreshToken: 'refresh-token',
+                 expiresAt: DateTime.utc(2026, 6, 12, 9),
+               ),
+         ),
+         preferencesService: _InMemoryPreferencesService(),
+       ),
+       refreshClient = Dio(BaseOptions(baseUrl: 'https://api.test')),
+       dio = Dio(BaseOptions(baseUrl: 'https://api.test')) {
+    refreshClient.httpClientAdapter = adapter;
+    dio.httpClientAdapter = adapter;
+    dio.interceptors.add(
+      AuthInterceptor(
+        client: dio,
+        sessionRepository: repository,
+        refreshCoordinator: RefreshCoordinator(),
+        refreshClient: refreshClient,
+      ),
+    );
+    apiClient = ApiClient(dio);
+  }
+
+  final _FakeBackendAdapter adapter;
+  final SessionRepository repository;
+  final Dio refreshClient;
+  final Dio dio;
+  late final ApiClient apiClient;
+}
+
+enum _FakeBackendScenario {
+  successAfterRefresh,
+  refreshFails,
+  retryStillUnauthorized,
+  malformedRefreshPayload,
 }
 
 class _InMemorySecureStorageService implements SecureStorageService {
@@ -110,8 +262,11 @@ class _InMemoryPreferencesService implements PreferencesService {
 }
 
 class _FakeBackendAdapter implements HttpClientAdapter {
-  _FakeBackendAdapter({required this.refreshGate});
+  _FakeBackendAdapter({required this.scenario, Completer<void>? refreshGate})
+    : refreshGate = refreshGate ?? Completer<void>()
+        ..complete();
 
+  final _FakeBackendScenario scenario;
   final Completer<void> refreshGate;
   final List<String?> protectedRequestAuthHeaders = <String?>[];
   int refreshRequestCount = 0;
@@ -129,7 +284,8 @@ class _FakeBackendAdapter implements HttpClientAdapter {
       final authHeader = options.headers['Authorization'] as String?;
       protectedRequestAuthHeaders.add(authHeader);
 
-      if (authHeader == 'Bearer refreshed-access') {
+      if (authHeader == 'Bearer refreshed-access' &&
+          scenario == _FakeBackendScenario.successAfterRefresh) {
         return _jsonResponse(200, {
           'success': true,
           'data': {'value': 'ok'},
@@ -145,6 +301,23 @@ class _FakeBackendAdapter implements HttpClientAdapter {
     if (options.path == '/auth/refresh') {
       refreshRequestCount += 1;
       await refreshGate.future;
+
+      if (scenario == _FakeBackendScenario.refreshFails) {
+        return _jsonResponse(401, {
+          'success': false,
+          'error': {
+            'code': 'REFRESH_REVOKED',
+            'message': 'Refresh token is no longer valid.',
+          },
+        });
+      }
+
+      if (scenario == _FakeBackendScenario.malformedRefreshPayload) {
+        return _jsonResponse(200, {
+          'success': true,
+          'data': {'expiresIn': 'oops'},
+        });
+      }
 
       return _jsonResponse(200, {
         'success': true,
