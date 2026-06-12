@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:planit_flutter/core/error/app_exception.dart';
+import 'package:planit_flutter/core/network/api_response.dart';
 import 'package:planit_flutter/core/session/session_controller.dart';
 import 'package:planit_flutter/core/session/session_repository.dart';
 import 'package:planit_flutter/core/session/session_snapshot.dart';
@@ -66,7 +68,7 @@ void main() {
     });
 
     test(
-      'restoreAuthenticatedSession clears persisted session on failure',
+      'restoreAuthenticatedSession clears persisted session on auth-invalid failure',
       () async {
         final secureStorage = _InMemorySecureStorageService();
         final preferences = _InMemoryPreferencesService();
@@ -85,7 +87,10 @@ void main() {
         await preferences.saveActiveJobId('job-123');
 
         final snapshot = await controller.restoreAuthenticatedSession(
-          refreshSession: (tokens) async => throw Exception('refresh failed'),
+          refreshSession: (tokens) async => throw const ApiErrorException(
+            code: 'REFRESH_REVOKED',
+            message: 'refresh failed',
+          ),
           fetchCurrentUser: () async => throw Exception('unauthorized'),
         );
 
@@ -94,6 +99,42 @@ void main() {
         expect(snapshot.activeJobId, isNull);
         expect(await secureStorage.readTokens(), isNull);
         expect(await preferences.readActiveJobId(), isNull);
+      },
+    );
+
+    test(
+      'restoreAuthenticatedSession preserves persisted session on transient restore failure',
+      () async {
+        final secureStorage = _InMemorySecureStorageService();
+        final preferences = _InMemoryPreferencesService();
+        final repository = SessionRepository(
+          secureStorage: secureStorage,
+          preferencesService: preferences,
+        );
+        final controller = SessionController(repository);
+        final tokens = SessionTokens(
+          accessToken: 'persisted-access',
+          refreshToken: 'persisted-refresh',
+          expiresAt: DateTime.utc(2026, 6, 12, 11),
+        );
+
+        await secureStorage.saveTokens(tokens);
+        await preferences.saveActiveJobId('job-123');
+
+        final snapshot = await controller.restoreAuthenticatedSession(
+          refreshSession: (tokens) async => tokens,
+          fetchCurrentUser: () async => throw const AppException(
+            code: 'INVALID_API_RESPONSE',
+            message: 'temporary parse problem',
+          ),
+        );
+
+        expect(snapshot.status, SessionStatus.restoreFailed);
+        expect(snapshot.tokens, tokens);
+        expect(snapshot.activeJobId, 'job-123');
+        expect(snapshot.userProfile, isNull);
+        expect(await secureStorage.readTokens(), tokens);
+        expect(await preferences.readActiveJobId(), 'job-123');
       },
     );
 

@@ -50,6 +50,85 @@ void main() {
 
       expect(redirect, '/study-profile');
     });
+
+    test(
+      'redirects incomplete onboarding with active job id to plan generation loading',
+      () {
+        final redirect = AppRedirectLogic.resolve(
+          location: '/exam-plan',
+          session: SessionSnapshot(
+            status: SessionStatus.authenticated,
+            tokens: _tokens,
+            activeJobId: 'job-123',
+            userProfile: const UserProfile(
+              id: 1,
+              name: '김민지',
+              email: 'minji@example.com',
+              onboardingCompleted: false,
+            ),
+          ),
+        );
+
+        expect(redirect, '/plan-generation-loading');
+      },
+    );
+
+    test('allows incomplete onboarding users to stay on exam plan route', () {
+      final redirect = AppRedirectLogic.resolve(
+        location: '/exam-plan',
+        session: SessionSnapshot(
+          status: SessionStatus.authenticated,
+          tokens: _tokens,
+          userProfile: const UserProfile(
+            id: 1,
+            name: '김민지',
+            email: 'minji@example.com',
+            onboardingCompleted: false,
+          ),
+        ),
+      );
+
+      expect(redirect, isNull);
+    });
+
+    test(
+      'allows incomplete onboarding users to stay on subject scope route',
+      () {
+        final redirect = AppRedirectLogic.resolve(
+          location: '/subject-scope',
+          session: SessionSnapshot(
+            status: SessionStatus.authenticated,
+            tokens: _tokens,
+            userProfile: const UserProfile(
+              id: 1,
+              name: '김민지',
+              email: 'minji@example.com',
+              onboardingCompleted: false,
+            ),
+          ),
+        );
+
+        expect(redirect, isNull);
+      },
+    );
+
+    test('redirects authenticated users away from auth routes to home', () {
+      final redirect = AppRedirectLogic.resolve(
+        location: '/login',
+        session: SessionSnapshot(
+          status: SessionStatus.authenticated,
+          tokens: _tokens,
+          userProfile: const UserProfile(
+            id: 1,
+            name: '김민지',
+            email: 'minji@example.com',
+            onboardingCompleted: true,
+          ),
+        ),
+      );
+
+      expect(redirect, '/home');
+    });
   });
 }
 

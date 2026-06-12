@@ -11,6 +11,10 @@ abstract final class AppRedirectLogic {
       return location == RoutePaths.splash ? null : RoutePaths.splash;
     }
 
+    if (session.status == SessionStatus.restoreFailed && session.hasSession) {
+      return location == RoutePaths.splash ? null : RoutePaths.splash;
+    }
+
     if (!session.hasSession ||
         session.status == SessionStatus.unauthenticated) {
       if (_isAuthRoute(location)) {
@@ -32,9 +36,11 @@ abstract final class AppRedirectLogic {
     }
 
     if (!userProfile.onboardingCompleted) {
-      return location == RoutePaths.studyProfile
-          ? null
-          : RoutePaths.studyProfile;
+      if (_isAllowedOnboardingRoute(location)) {
+        return null;
+      }
+
+      return RoutePaths.studyProfile;
     }
 
     if (_isPublicOnlyRoute(location) || location == RoutePaths.splash) {
@@ -55,6 +61,12 @@ abstract final class AppRedirectLogic {
         location == RoutePaths.examPlan ||
         location == RoutePaths.subjectScope ||
         location == RoutePaths.planGenerationLoading;
+  }
+
+  static bool _isAllowedOnboardingRoute(String location) {
+    return location == RoutePaths.studyProfile ||
+        location == RoutePaths.examPlan ||
+        location == RoutePaths.subjectScope;
   }
 
   static bool _isPublicOnlyRoute(String location) {

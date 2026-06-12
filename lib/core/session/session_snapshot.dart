@@ -1,7 +1,13 @@
 import '../../features/my_page/domain/model/user_profile.dart';
 import 'session_tokens.dart';
 
-enum SessionStatus { initial, restoring, authenticated, unauthenticated }
+enum SessionStatus {
+  initial,
+  restoring,
+  restoreFailed,
+  authenticated,
+  unauthenticated,
+}
 
 class SessionSnapshot {
   const SessionSnapshot({

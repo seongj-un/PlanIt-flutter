@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../error/app_exception.dart';
+import '../network/api_response.dart';
 import '../../features/my_page/domain/model/user_profile.dart';
 import 'session_repository.dart';
 import 'session_snapshot.dart';
@@ -61,9 +63,18 @@ class SessionController extends StateNotifier<SessionSnapshot> {
         userProfile: userProfile,
         status: SessionStatus.authenticated,
       );
-    } catch (_) {
-      await _repository.clear();
-      state = const SessionSnapshot(status: SessionStatus.unauthenticated);
+    } catch (error) {
+      if (_isAuthInvalidFailure(error)) {
+        await _repository.clear();
+        state = const SessionSnapshot(status: SessionStatus.unauthenticated);
+      } else {
+        final latestTokens = await _repository.readTokens();
+        state = SessionSnapshot(
+          tokens: latestTokens ?? snapshot.tokens,
+          activeJobId: snapshot.activeJobId,
+          status: SessionStatus.restoreFailed,
+        );
+      }
     }
 
     return state;
@@ -94,5 +105,20 @@ class SessionController extends StateNotifier<SessionSnapshot> {
   Future<void> updateTokens(SessionTokens tokens) async {
     await _repository.saveTokens(tokens);
     state = state.copyWith(tokens: tokens);
+  }
+
+  bool _isAuthInvalidFailure(Object error) {
+    if (error is ApiErrorException) {
+      return error.code == 'UNAUTHORIZED' ||
+          error.code == 'REFRESH_REVOKED' ||
+          error.code == 'INVALID_REFRESH_TOKEN';
+    }
+
+    if (error is AppException) {
+      return error.code == 'UNAUTHORIZED' ||
+          error.code == 'TOKEN_REFRESH_FAILED';
+    }
+
+    return false;
   }
 }
