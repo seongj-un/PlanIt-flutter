@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/route_paths.dart';
+import '../../../../core/network/network_providers.dart';
+import '../../../plan_generation/domain/model/plan_generation_input.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../../../shared/widgets/primary_button.dart';
 import '../../domain/model/subject_scope_input.dart';
@@ -120,8 +122,52 @@ class _SubjectScopePageState extends ConsumerState<SubjectScopePage> {
 
     final success = await controller.submit(inputs);
     if (success && mounted) {
-      context.go(RoutePaths.planGenerationLoading);
+      final planGenerationInput = _buildPlanGenerationInput(inputs);
+      if (planGenerationInput == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('기본 학습 정보를 다시 확인해주세요.')),
+        );
+        return;
+      }
+
+      context.go(
+        RoutePaths.planGenerationLoading,
+        extra: planGenerationInput,
+      );
     }
+  }
+
+  PlanGenerationInput? _buildPlanGenerationInput(List<SubjectScopeInput> inputs) {
+    final userProfile = ref.read(sessionControllerProvider).userProfile;
+    final preferredStudyMethod = userProfile?.preferredStudyMethod;
+    final dailyMaxStudyHours = userProfile?.usualStudyHoursPerDay;
+    if (preferredStudyMethod == null ||
+        preferredStudyMethod.isEmpty ||
+        dailyMaxStudyHours == null) {
+      return null;
+    }
+
+    final subjects = inputs
+        .map(
+          (input) => PlanGenerationSubjectInput(
+            subjectName: input.subjectName,
+            examRange: input.examRange,
+            preferredMethodNote: input.preferredMethodNote,
+            difficulty: input.priority,
+          ),
+        )
+        .toList(growable: false);
+    final difficultSubjects = inputs
+        .where((input) => input.priority == 'HIGH')
+        .map((input) => input.subjectName)
+        .toList(growable: false);
+
+    return PlanGenerationInput(
+      subjects: subjects,
+      preferredStudyMethod: preferredStudyMethod,
+      difficultSubjects: difficultSubjects,
+      dailyMaxStudyHours: dailyMaxStudyHours,
+    );
   }
 }
 

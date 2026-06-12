@@ -8,6 +8,8 @@ import '../../features/auth/presentation/pages/welcome_page.dart';
 import '../../features/exam_plan/presentation/pages/exam_plan_page.dart';
 import '../../features/exam_plan/presentation/pages/subject_scope_page.dart';
 import '../../features/onboarding/presentation/pages/study_profile_page.dart';
+import '../../features/plan_generation/domain/model/plan_generation_input.dart';
+import '../../features/plan_generation/presentation/pages/plan_generation_loading_page.dart';
 import '../../shared/widgets/app_loading_view.dart';
 import 'app_redirect_logic.dart';
 import 'main_shell.dart';
@@ -71,12 +73,14 @@ abstract final class AppRouter {
         ),
         GoRoute(
           path: RoutePaths.planGenerationLoading,
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: _RoutePlaceholderPage(
-              title: 'Plan Generation',
-              subtitle: 'Plan generation loading placeholder.',
-            ),
-          ),
+          pageBuilder: (context, state) {
+            final initialInput = state.extra is PlanGenerationInput
+                ? state.extra as PlanGenerationInput
+                : null;
+            return NoTransitionPage(
+              child: PlanGenerationLoadingPage(initialInput: initialInput),
+            );
+          },
         ),
         StatefulShellRoute.indexedStack(
           builder: (context, state, navigationShell) {

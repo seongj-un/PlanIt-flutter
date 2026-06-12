@@ -74,3 +74,17 @@ If context is reset, read this file first, then `agent-notes.md`.
 - Re-entry behavior should prefer current server-backed state where practical in Task 6 scope:
   - study profile and exam plan can hydrate from `SessionSnapshot.userProfile`
   - subject scope has no existing read API in scope, so keep it local-to-form for this task and document the assumption
+
+## 2026-06-12 Task 7 Plan Generation Notes
+
+- `plan generation` now starts from the subject scope step by passing a `PlanGenerationInput` route extra into `/plan-generation-loading`; this keeps the subject list in memory long enough to call `POST /plan-generation-jobs` without inventing a read API.
+- Request mapping assumptions remain:
+  - `SubjectScopeInput.priority -> subjects[].difficulty`
+  - `priority == HIGH -> difficultSubjects`
+  - `usualStudyHoursPerDay -> dailyMaxStudyHours`
+- `PlanGenerationLoadingPage` owns both job creation and resume polling:
+  - if `SessionSnapshot.activeJobId` exists, it skips creation and resumes `GET /plan-generation-jobs/{jobId}`
+  - otherwise it creates the job from `initialInput`, stores `jobId`, then polls
+- Completion path refreshes `GET /users/me` before routing to `Home`, because redirect logic still depends on `userProfile.onboardingCompleted`.
+- Added `SessionController.clearActiveJobId()` because the loading flow needs to clear only the in-progress job without destroying tokens or the rest of the session.
+- Exam plan session persistence now merges partial exam-plan responses with existing study profile fields so later steps still have `preferredStudyMethod` and `usualStudyHoursPerDay`.

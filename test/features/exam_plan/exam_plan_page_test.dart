@@ -34,9 +34,11 @@ void main() {
         id: 1,
         name: '김민지',
         email: 'minji@example.com',
+        preferredStudyMethod: 'BALANCED',
         targetExamType: 'CSAT',
         targetExamLabel: '수능',
         examDate: DateTime(2026, 11, 19),
+        usualStudyHoursPerDay: 4,
         onboardingCompleted: false,
       ),
     );
@@ -121,9 +123,11 @@ class _FakeExamPlanRepository implements ExamPlanRepository {
       id: 1,
       name: '김민지',
       email: 'minji@example.com',
+      preferredStudyMethod: 'BALANCED',
       targetExamType: input.targetExamType,
       targetExamLabel: input.targetExamLabel,
       examDate: DateTime.parse(input.examDate),
+      usualStudyHoursPerDay: 4,
       onboardingCompleted: false,
     );
   }

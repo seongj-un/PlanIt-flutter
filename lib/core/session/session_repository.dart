@@ -58,6 +58,10 @@ class SessionRepository {
     return _preferencesService.saveActiveJobId(jobId);
   }
 
+  Future<void> clearActiveJobId() {
+    return _preferencesService.clearActiveJobId();
+  }
+
   Future<void> saveTokens(SessionTokens tokens) {
     return _secureStorage.saveTokens(tokens);
   }

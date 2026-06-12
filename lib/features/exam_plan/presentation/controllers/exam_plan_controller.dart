@@ -98,10 +98,37 @@ class ExamPlanController extends StateNotifier<ExamPlanFormState> {
       return Future.value();
     }
 
+    final currentUser = _sessionController.state.userProfile;
+    final mergedUserProfile = currentUser == null
+        ? userProfile
+        : UserProfile(
+            id: userProfile.id,
+            name: userProfile.name,
+            email: userProfile.email ?? currentUser.email,
+            age: userProfile.age ?? currentUser.age,
+            schoolLevel: userProfile.schoolLevel ?? currentUser.schoolLevel,
+            targetExamType:
+                userProfile.targetExamType ?? currentUser.targetExamType,
+            targetExamLabel:
+                userProfile.targetExamLabel ?? currentUser.targetExamLabel,
+            examDate: userProfile.examDate ?? currentUser.examDate,
+            usualStudyHoursPerDay:
+                userProfile.usualStudyHoursPerDay ??
+                currentUser.usualStudyHoursPerDay,
+            preferredStudyMethod:
+                userProfile.preferredStudyMethod ??
+                currentUser.preferredStudyMethod,
+            sproutCount: userProfile.sproutCount ?? currentUser.sproutCount,
+            attendanceStreakDays:
+                userProfile.attendanceStreakDays ??
+                currentUser.attendanceStreakDays,
+            onboardingCompleted: userProfile.onboardingCompleted,
+          );
+
     return _sessionController.save(
       tokens: tokens,
       activeJobId: _sessionController.state.activeJobId,
-      userProfile: userProfile,
+      userProfile: mergedUserProfile,
     );
   }
 }

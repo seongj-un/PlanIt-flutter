@@ -102,6 +102,11 @@ class SessionController extends StateNotifier<SessionSnapshot> {
     state = state.copyWith(activeJobId: jobId);
   }
 
+  Future<void> clearActiveJobId() async {
+    await _repository.clearActiveJobId();
+    state = state.copyWith(clearActiveJobId: true);
+  }
+
   Future<void> updateTokens(SessionTokens tokens) async {
     await _repository.saveTokens(tokens);
     state = state.copyWith(tokens: tokens);
