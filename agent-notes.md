@@ -60,7 +60,7 @@
 - 실제 백엔드 응답이 `api-spec.md`와 다르면 DTO 파싱 수정이 필요할 수 있다.
 - notification settings 조회 API가 생기기 전까지는 알림 설정 화면이 서버 현재값을 보여주지 못한다.
 - subject scope 조회 API가 생기기 전까지는 subject scope 단계 재진입 복원력이 제한적이다.
-- 현재 작업 경로가 `Desktop` 아래라서, iOS simulator 빌드 시 macOS File Provider xattr 때문에 `resource fork, Finder information, or similar detritus not allowed` 에러가 날 수 있다. 이 경우 저장소를 비동기화 경로 밖으로 옮겨 다시 빌드한다.
+- 현재 작업 경로가 `Desktop` 아래라서, iOS simulator 빌드 시 macOS File Provider xattr 때문에 기본 `build/` 출력 경로에서는 `resource fork, Finder information, or similar detritus not allowed` 에러가 날 수 있다.
 
 ## 2026-06-14 실행 검증 메모
 
@@ -72,7 +72,16 @@
   - iOS simulator build 성공
   - iPhone 17 Pro simulator에서 앱 launch 성공
   - Dart VM Service attach 확인
-- 결론: 앱 코드는 실행 가능 상태고, 남은 이슈는 현재 저장소 위치의 macOS 경로 특성이다.
+- 이후 현재 워크스페이스 자체에서도 아래 방식으로 해결했다.
+  - `build`를 `/private/tmp/PlanIt-flutter-build` symlink로 전환
+  - stale 상태였던 `.dart_tool/flutter_build`를 비우고 다시 build
+- 해결 후 현재 워크스페이스에서 확인한 명령:
+  - `flutter build ios --simulator --debug --dart-define=API_BASE_URL=http://localhost:8080`
+  - `flutter run -d 6314C368-B770-4949-8A5A-EFC99DC3B498 --dart-define=API_BASE_URL=http://localhost:8080`
+- 결론: 앱 코드는 실행 가능 상태고, 현재 워크스페이스도 local build output을 `/private/tmp`로 빼면 정상 실행된다.
+- 복구 팁:
+  - `flutter clean`으로 `build` symlink가 사라지면 다시 `build -> /private/tmp/PlanIt-flutter-build`를 만들어야 한다.
+  - symlink를 바꾼 직후 `native_assets` 관련 실패가 나면 `.dart_tool/flutter_build`를 비우고 다시 빌드한다.
 
 ## 2026-06-12 Flutter 스캐폴딩 메모
 

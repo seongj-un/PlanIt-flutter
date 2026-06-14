@@ -158,6 +158,10 @@ If context is reset, read this file first, then `agent-notes.md`.
 - Verified workaround on `2026-06-14`:
   - clone/copy the repo to `/private/tmp/PlanIt-flutter-run`
   - from there, both `flutter build ios --simulator --debug --dart-define=API_BASE_URL=http://localhost:8080` and `flutter run -d 6314C368-B770-4949-8A5A-EFC99DC3B498 --dart-define=API_BASE_URL=http://localhost:8080` succeeded
+- Verified in-workspace fix on `2026-06-14`:
+  - point `build` to `/private/tmp/PlanIt-flutter-build`
+  - if needed, clear stale `.dart_tool/flutter_build`
+  - after that, both `flutter build ios --simulator --debug --dart-define=API_BASE_URL=http://localhost:8080` and `flutter run -d 6314C368-B770-4949-8A5A-EFC99DC3B498 --dart-define=API_BASE_URL=http://localhost:8080` succeeded from the current workspace
 - Most important code entry points for follow-up work:
   - `lib/app/bootstrap/app_bootstrap.dart`
   - `lib/app/router/app_router.dart`
