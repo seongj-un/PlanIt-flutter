@@ -62,6 +62,18 @@
 - subject scope 조회 API가 생기기 전까지는 subject scope 단계 재진입 복원력이 제한적이다.
 - 현재 작업 경로가 `Desktop` 아래라서, iOS simulator 빌드 시 macOS File Provider xattr 때문에 `resource fork, Finder information, or similar detritus not allowed` 에러가 날 수 있다. 이 경우 저장소를 비동기화 경로 밖으로 옮겨 다시 빌드한다.
 
+## 2026-06-14 실행 검증 메모
+
+- 현재 저장소 경로 `/Users/seongjun/Desktop/project/PlanIt-flutter`에서는 iOS simulator packaging이 File Provider xattr 때문에 실패한다.
+- 동일 코드를 `/private/tmp/PlanIt-flutter-run`으로 복제한 뒤 아래 명령으로 재검증했다.
+  - `flutter build ios --simulator --debug --dart-define=API_BASE_URL=http://localhost:8080`
+  - `flutter run -d 6314C368-B770-4949-8A5A-EFC99DC3B498 --dart-define=API_BASE_URL=http://localhost:8080`
+- 결과:
+  - iOS simulator build 성공
+  - iPhone 17 Pro simulator에서 앱 launch 성공
+  - Dart VM Service attach 확인
+- 결론: 앱 코드는 실행 가능 상태고, 남은 이슈는 현재 저장소 위치의 macOS 경로 특성이다.
+
 ## 2026-06-12 Flutter 스캐폴딩 메모
 
 - Flutter 스캐폴딩을 시작했다.

@@ -49,6 +49,7 @@ Notes:
 - Android Emulator usually needs `http://10.0.2.2:<port>`.
 - Physical devices need a backend address reachable on the same network.
 - If iOS simulator build fails with `resource fork, Finder information, or similar detritus not allowed`, move the repo out of an iCloud/File Provider managed path such as `Desktop` or `Documents` and build again.
+- Verified on `2026-06-14`: the same project built and launched successfully from `/private/tmp/PlanIt-flutter-run`, so the failure is tied to the workspace path rather than the Flutter app code.
 
 ## Verification
 
