@@ -1,13 +1,9 @@
 class StudyProfileInput {
   const StudyProfileInput({
-    required this.age,
-    required this.schoolLevel,
     required this.usualStudyHoursPerDay,
     required this.preferredStudyMethod,
   });
 
-  final int age;
-  final String schoolLevel;
   final int usualStudyHoursPerDay;
   final String preferredStudyMethod;
 
@@ -18,17 +14,10 @@ class StudyProfileInput {
     }
 
     return other is StudyProfileInput &&
-        other.age == age &&
-        other.schoolLevel == schoolLevel &&
         other.usualStudyHoursPerDay == usualStudyHoursPerDay &&
         other.preferredStudyMethod == preferredStudyMethod;
   }
 
   @override
-  int get hashCode => Object.hash(
-    age,
-    schoolLevel,
-    usualStudyHoursPerDay,
-    preferredStudyMethod,
-  );
+  int get hashCode => Object.hash(usualStudyHoursPerDay, preferredStudyMethod);
 }

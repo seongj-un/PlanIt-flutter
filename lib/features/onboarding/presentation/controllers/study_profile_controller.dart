@@ -40,23 +40,9 @@ class StudyProfileController extends StateNotifier<StudyProfileFormState> {
     );
   }
 
-  void setSchoolLevel(String value) {
-    state = state.copyWith(
-      schoolLevel: value,
-      clearSchoolLevelError: true,
-      clearFormError: true,
-    );
-  }
-
-  Future<bool> submit({
-    required String ageText,
-    required String usualStudyHoursText,
-  }) async {
-    final age = int.tryParse(ageText.trim());
+  Future<bool> submit({required String usualStudyHoursText}) async {
     final studyHours = int.tryParse(usualStudyHoursText.trim());
     final validationState = state.copyWith(
-      ageError: _validateAge(ageText.trim(), age),
-      schoolLevelError: _validateSchoolLevel(state.schoolLevel),
       studyHoursError: _validateStudyHours(
         usualStudyHoursText.trim(),
         studyHours,
@@ -68,7 +54,7 @@ class StudyProfileController extends StateNotifier<StudyProfileFormState> {
       clearSuccess: true,
     );
 
-    if (validationState.hasErrors || age == null || studyHours == null) {
+    if (validationState.hasErrors || studyHours == null) {
       state = validationState;
       return false;
     }
@@ -78,8 +64,6 @@ class StudyProfileController extends StateNotifier<StudyProfileFormState> {
     try {
       final userProfile = await _repository.saveStudyProfile(
         StudyProfileInput(
-          age: age,
-          schoolLevel: state.schoolLevel!,
           usualStudyHoursPerDay: studyHours,
           preferredStudyMethod: state.preferredStudyMethod!,
         ),
@@ -115,12 +99,8 @@ class StudyProfileController extends StateNotifier<StudyProfileFormState> {
 
 class StudyProfileFormState {
   const StudyProfileFormState({
-    this.schoolLevel,
     this.preferredStudyMethod,
-    this.initialAgeText = '',
     this.initialStudyHoursText = '',
-    this.ageError,
-    this.schoolLevelError,
     this.studyHoursError,
     this.preferredMethodError,
     this.formError,
@@ -132,17 +112,11 @@ class StudyProfileFormState {
     ApiErrorException error, {
     required StudyProfileFormState baseState,
   }) {
-    String? ageError;
-    String? schoolLevelError;
     String? studyHoursError;
     String? preferredMethodError;
 
     for (final fieldError in error.fieldErrors) {
       switch (fieldError.field) {
-        case 'age':
-          ageError = fieldError.reason;
-        case 'schoolLevel':
-          schoolLevelError = fieldError.reason;
         case 'usualStudyHoursPerDay':
           studyHoursError = fieldError.reason;
         case 'preferredStudyMethod':
@@ -151,15 +125,11 @@ class StudyProfileFormState {
     }
 
     final hasFieldError = [
-      ageError,
-      schoolLevelError,
       studyHoursError,
       preferredMethodError,
     ].any((value) => value != null && value.isNotEmpty);
 
     return baseState.copyWith(
-      ageError: ageError,
-      schoolLevelError: schoolLevelError,
       studyHoursError: studyHoursError,
       preferredMethodError: preferredMethodError,
       formError: hasFieldError ? null : error.message,
@@ -169,20 +139,14 @@ class StudyProfileFormState {
 
   factory StudyProfileFormState.fromUserProfile(UserProfile? userProfile) {
     return StudyProfileFormState(
-      schoolLevel: userProfile?.schoolLevel,
       preferredStudyMethod: userProfile?.preferredStudyMethod,
-      initialAgeText: userProfile?.age?.toString() ?? '',
       initialStudyHoursText:
           userProfile?.usualStudyHoursPerDay?.toString() ?? '',
     );
   }
 
-  final String? schoolLevel;
   final String? preferredStudyMethod;
-  final String initialAgeText;
   final String initialStudyHoursText;
-  final String? ageError;
-  final String? schoolLevelError;
   final String? studyHoursError;
   final String? preferredMethodError;
   final String? formError;
@@ -190,38 +154,25 @@ class StudyProfileFormState {
   final bool isSuccess;
 
   bool get hasErrors =>
-      (ageError != null && ageError!.isNotEmpty) ||
-      (schoolLevelError != null && schoolLevelError!.isNotEmpty) ||
       (studyHoursError != null && studyHoursError!.isNotEmpty) ||
       (preferredMethodError != null && preferredMethodError!.isNotEmpty);
 
   StudyProfileFormState copyWith({
-    String? schoolLevel,
     String? preferredStudyMethod,
-    String? initialAgeText,
     String? initialStudyHoursText,
-    String? ageError,
-    String? schoolLevelError,
     String? studyHoursError,
     String? preferredMethodError,
     String? formError,
     bool clearFormError = false,
-    bool clearSchoolLevelError = false,
     bool clearPreferredMethodError = false,
     bool clearSuccess = false,
     bool? isSubmitting,
     bool? isSuccess,
   }) {
     return StudyProfileFormState(
-      schoolLevel: schoolLevel ?? this.schoolLevel,
       preferredStudyMethod: preferredStudyMethod ?? this.preferredStudyMethod,
-      initialAgeText: initialAgeText ?? this.initialAgeText,
       initialStudyHoursText:
           initialStudyHoursText ?? this.initialStudyHoursText,
-      ageError: ageError ?? this.ageError,
-      schoolLevelError: clearSchoolLevelError
-          ? null
-          : (schoolLevelError ?? this.schoolLevelError),
       studyHoursError: studyHoursError ?? this.studyHoursError,
       preferredMethodError: clearPreferredMethodError
           ? null
@@ -233,26 +184,9 @@ class StudyProfileFormState {
   }
 }
 
-String? _validateAge(String value, int? parsed) {
-  if (value.isEmpty) {
-    return '나이를 입력해주세요.';
-  }
-  if (parsed == null || parsed <= 0) {
-    return '올바른 나이를 입력해주세요.';
-  }
-  return null;
-}
-
 String? _validatePreferredMethod(String? value) {
   if (value == null || value.isEmpty) {
     return '선호 학습 방식을 선택해주세요.';
-  }
-  return null;
-}
-
-String? _validateSchoolLevel(String? value) {
-  if (value == null || value.isEmpty) {
-    return '학교 단계를 선택해주세요.';
   }
   return null;
 }

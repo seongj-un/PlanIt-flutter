@@ -15,14 +15,12 @@ class StudyProfilePage extends ConsumerStatefulWidget {
 }
 
 class _StudyProfilePageState extends ConsumerState<StudyProfilePage> {
-  late final TextEditingController _ageController;
   late final TextEditingController _studyHoursController;
 
   @override
   void initState() {
     super.initState();
     final state = ref.read(studyProfileControllerProvider);
-    _ageController = TextEditingController(text: state.initialAgeText);
     _studyHoursController = TextEditingController(
       text: state.initialStudyHoursText,
     );
@@ -30,7 +28,6 @@ class _StudyProfilePageState extends ConsumerState<StudyProfilePage> {
 
   @override
   void dispose() {
-    _ageController.dispose();
     _studyHoursController.dispose();
     super.dispose();
   }
@@ -62,30 +59,6 @@ class _StudyProfilePageState extends ConsumerState<StudyProfilePage> {
                         style: theme.textTheme.bodyMedium,
                       ),
                       const SizedBox(height: 24),
-                      AppTextField(
-                        controller: _ageController,
-                        label: '나이',
-                        hintText: '18',
-                        errorText: state.ageError,
-                        keyboardType: TextInputType.number,
-                        enabled: !state.isSubmitting,
-                      ),
-                      const SizedBox(height: 16),
-                      _ChipField(
-                        label: '학교 단계',
-                        errorText: state.schoolLevelError,
-                        children: [
-                          _ChoiceOption(label: '중학생', value: 'MIDDLE_SCHOOL'),
-                          _ChoiceOption(label: '고등학교', value: 'HIGH_SCHOOL'),
-                          _ChoiceOption(label: '재수생', value: 'RETAKER'),
-                          _ChoiceOption(label: '기타', value: 'ETC'),
-                        ],
-                        selectedValue: state.schoolLevel,
-                        onSelected: state.isSubmitting
-                            ? null
-                            : controller.setSchoolLevel,
-                      ),
-                      const SizedBox(height: 16),
                       AppTextField(
                         controller: _studyHoursController,
                         label: '하루 공부 시간',
@@ -136,7 +109,6 @@ class _StudyProfilePageState extends ConsumerState<StudyProfilePage> {
 
   Future<void> _submit(StudyProfileController controller) async {
     final success = await controller.submit(
-      ageText: _ageController.text,
       usualStudyHoursText: _studyHoursController.text,
     );
 

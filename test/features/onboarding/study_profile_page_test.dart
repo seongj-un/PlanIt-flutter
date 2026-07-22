@@ -32,8 +32,6 @@ void main() {
         id: 1,
         name: '김민지',
         email: 'minji@example.com',
-        age: 17,
-        schoolLevel: 'MIDDLE_SCHOOL',
         usualStudyHoursPerDay: 3,
         preferredStudyMethod: 'CONCEPT_FIRST',
         onboardingCompleted: false,
@@ -66,12 +64,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('17'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField).at(0), '18');
-    await tester.enterText(find.byType(TextField).at(1), '4');
-    await tester.tap(find.text('고등학교'));
+    await tester.enterText(find.byType(TextField), '4');
     await tester.tap(find.text('균형 있게'));
     await tester.tap(find.text('다음'));
     await tester.pumpAndSettle();
@@ -80,8 +75,6 @@ void main() {
     expect(
       repository.lastInput,
       const StudyProfileInput(
-        age: 18,
-        schoolLevel: 'HIGH_SCHOOL',
         usualStudyHoursPerDay: 4,
         preferredStudyMethod: 'BALANCED',
       ),
@@ -100,8 +93,6 @@ class _FakeStudyProfileRepository implements StudyProfileRepository {
       id: 1,
       name: '김민지',
       email: 'minji@example.com',
-      age: input.age,
-      schoolLevel: input.schoolLevel,
       usualStudyHoursPerDay: input.usualStudyHoursPerDay,
       preferredStudyMethod: input.preferredStudyMethod,
       onboardingCompleted: false,

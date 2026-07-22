@@ -4,8 +4,6 @@ class UserProfile {
     required this.name,
     required this.email,
     required this.onboardingCompleted,
-    this.age,
-    this.schoolLevel,
     this.targetExamType,
     this.targetExamLabel,
     this.examDate,
@@ -18,8 +16,6 @@ class UserProfile {
   final int id;
   final String name;
   final String? email;
-  final int? age;
-  final String? schoolLevel;
   final String? targetExamType;
   final String? targetExamLabel;
   final DateTime? examDate;
@@ -39,8 +35,6 @@ class UserProfile {
         other.id == id &&
         other.name == name &&
         other.email == email &&
-        other.age == age &&
-        other.schoolLevel == schoolLevel &&
         other.targetExamType == targetExamType &&
         other.targetExamLabel == targetExamLabel &&
         other.examDate == examDate &&
@@ -56,8 +50,6 @@ class UserProfile {
     id,
     name,
     email,
-    age,
-    schoolLevel,
     targetExamType,
     targetExamLabel,
     examDate,

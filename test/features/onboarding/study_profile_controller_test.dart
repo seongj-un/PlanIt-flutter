@@ -24,15 +24,10 @@ void main() {
         sessionController: sessionController,
       );
 
-      final result = await controller.submit(
-        ageText: '',
-        usualStudyHoursText: '',
-      );
+      final result = await controller.submit(usualStudyHoursText: '');
 
       expect(result, isFalse);
       expect(repository.saveCallCount, 0);
-      expect(controller.state.ageError, '나이를 입력해주세요.');
-      expect(controller.state.schoolLevelError, '학교 단계를 선택해주세요.');
       expect(controller.state.studyHoursError, '하루 공부 시간을 입력해주세요.');
       expect(controller.state.preferredMethodError, '선호 학습 방식을 선택해주세요.');
     });
@@ -62,27 +57,19 @@ void main() {
           sessionController: sessionController,
         );
 
-        controller.setSchoolLevel('HIGH_SCHOOL');
         controller.setPreferredStudyMethod('BALANCED');
 
-        final result = await controller.submit(
-          ageText: '18',
-          usualStudyHoursText: '4',
-        );
+        final result = await controller.submit(usualStudyHoursText: '4');
 
         expect(result, isTrue);
         expect(
           repository.lastInput,
           const StudyProfileInput(
-            age: 18,
-            schoolLevel: 'HIGH_SCHOOL',
             usualStudyHoursPerDay: 4,
             preferredStudyMethod: 'BALANCED',
           ),
         );
         expect(controller.state.isSuccess, isTrue);
-        expect(sessionController.state.userProfile?.age, 18);
-        expect(sessionController.state.userProfile?.schoolLevel, 'HIGH_SCHOOL');
         expect(sessionController.state.userProfile?.usualStudyHoursPerDay, 4);
         expect(
           sessionController.state.userProfile?.preferredStudyMethod,
@@ -106,8 +93,6 @@ class _FakeStudyProfileRepository implements StudyProfileRepository {
       id: 1,
       name: '김민지',
       email: 'minji@example.com',
-      age: input.age,
-      schoolLevel: input.schoolLevel,
       usualStudyHoursPerDay: input.usualStudyHoursPerDay,
       preferredStudyMethod: input.preferredStudyMethod,
       onboardingCompleted: false,

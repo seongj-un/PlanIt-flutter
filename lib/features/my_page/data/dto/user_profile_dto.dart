@@ -7,8 +7,6 @@ class UserProfileDto {
     required this.name,
     required this.email,
     required this.onboardingCompleted,
-    this.age,
-    this.schoolLevel,
     this.targetExamType,
     this.targetExamLabel,
     this.examDate,
@@ -48,8 +46,6 @@ class UserProfileDto {
       id: id,
       name: name,
       email: email,
-      age: _readOptionalInt(map, 'age'),
-      schoolLevel: _readOptionalString(map, 'schoolLevel'),
       targetExamType: _readOptionalString(map, 'targetExamType'),
       targetExamLabel: _readOptionalString(map, 'targetExamLabel'),
       examDate: _readOptionalDate(map, 'examDate'),
@@ -64,8 +60,6 @@ class UserProfileDto {
   final int id;
   final String name;
   final String email;
-  final int? age;
-  final String? schoolLevel;
   final String? targetExamType;
   final String? targetExamLabel;
   final DateTime? examDate;
@@ -80,8 +74,6 @@ class UserProfileDto {
       id: id,
       name: name,
       email: email,
-      age: age,
-      schoolLevel: schoolLevel,
       targetExamType: targetExamType,
       targetExamLabel: targetExamLabel,
       examDate: examDate,

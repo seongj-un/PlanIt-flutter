@@ -106,8 +106,6 @@ class ExamPlanController extends StateNotifier<ExamPlanFormState> {
       id: currentUser.id,
       name: currentUser.name,
       email: currentUser.email,
-      age: currentUser.age,
-      schoolLevel: currentUser.schoolLevel,
       targetExamType: result.targetExamType ?? currentUser.targetExamType,
       targetExamLabel: result.targetExamLabel ?? currentUser.targetExamLabel,
       examDate: result.examDate ?? currentUser.examDate,
