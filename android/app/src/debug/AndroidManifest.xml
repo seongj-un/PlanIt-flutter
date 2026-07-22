@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- 디버그 전용: 로컬 HTTP 백엔드(예: 10.0.2.2:8081) 연동을 위해 cleartext 허용.
+         릴리스 빌드에는 병합되지 않아 프로덕션 보안에 영향 없음. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
