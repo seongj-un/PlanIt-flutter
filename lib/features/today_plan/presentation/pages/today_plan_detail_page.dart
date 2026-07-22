@@ -23,8 +23,8 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
   void initState() {
     super.initState();
     Future<void>.microtask(() {
-      ref.read(todayPlanControllerProvider.notifier).load();
-      ref.read(dashboardControllerProvider.notifier).load();
+      ref.read(todayPlanControllerProvider.notifier).load(forceRefresh: true);
+      ref.read(dashboardControllerProvider.notifier).load(forceRefresh: true);
     });
   }
 
@@ -110,14 +110,20 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
               isCompleted: item.completed,
               trailing: Checkbox(
                 value: item.completed,
-                onChanged: (value) {
+                onChanged: (value) async {
                   if (value == null) {
                     return;
                   }
-                  ref.read(todayPlanControllerProvider.notifier).toggleItem(
-                    planItemId: item.planItemId,
-                    completed: value,
-                  );
+                  await ref
+                      .read(todayPlanControllerProvider.notifier)
+                      .toggleItem(
+                        planItemId: item.planItemId,
+                        completed: value,
+                      );
+                  // 새싹 수가 바뀌므로 대시보드도 다시 불러온다.
+                  await ref
+                      .read(dashboardControllerProvider.notifier)
+                      .load(forceRefresh: true);
                 },
               ),
             ),
@@ -127,8 +133,16 @@ class _TodayPlanDetailPageState extends ConsumerState<TodayPlanDetailPage> {
           PrimaryButton(
             label: '오늘 플랜 완료하기',
             isLoading: state.isCompleting,
-            onPressed: () {
-              ref.read(todayPlanControllerProvider.notifier).completeTodayPlan();
+            onPressed: () async {
+              final completed = await ref
+                  .read(todayPlanControllerProvider.notifier)
+                  .completeTodayPlan();
+              if (completed) {
+                // 출석(연속 일수)이 기록됐으므로 대시보드를 갱신한다.
+                await ref
+                    .read(dashboardControllerProvider.notifier)
+                    .load(forceRefresh: true);
+              }
             },
           ),
         ],

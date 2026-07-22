@@ -24,8 +24,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     Future<void>.microtask(() {
-      ref.read(dashboardControllerProvider.notifier).load();
-      ref.read(todayPlanControllerProvider.notifier).load();
+      // 홈에 들어올 때마다 새로 불러온다. 캐시를 쓰면 항목을 체크하거나 플랜을
+      // 완료하고 돌아와도 새싹/연속 출석이 옛 값으로 남는다.
+      ref.read(dashboardControllerProvider.notifier).load(forceRefresh: true);
+      ref.read(todayPlanControllerProvider.notifier).load(forceRefresh: true);
     });
   }
 
