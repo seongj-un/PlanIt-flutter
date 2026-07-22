@@ -66,7 +66,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  errorMessage ?? '플랜을 만들면 오늘 할 공부가 여기에 표시돼요.',
+                  errorMessage ??
+                      '플랜을 만들면 오늘 할 공부가 여기에 표시돼요. 시험이 끝났다면 새 시험 계획부터 세워주세요.',
                   style: Theme.of(context).textTheme.bodyMedium,
                   textAlign: TextAlign.center,
                 ),
@@ -74,6 +75,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 PrimaryButton(
                   label: '플랜 만들기',
                   onPressed: () => context.go(RoutePaths.subjectScope),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton(
+                  onPressed: () => context.go(RoutePaths.examPlan),
+                  child: const Text('새 시험 계획 세우기'),
                 ),
                 const SizedBox(height: 8),
                 TextButton(
@@ -207,6 +213,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 16),
+          OutlinedButton(
+            onPressed: () => context.go(RoutePaths.subjectScope),
+            child: const Text('플랜 다시 만들기'),
           ),
         ],
       ),
