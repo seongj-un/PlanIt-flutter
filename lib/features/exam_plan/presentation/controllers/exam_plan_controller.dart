@@ -6,6 +6,7 @@ import '../../../../core/session/session_controller.dart';
 import '../../../my_page/domain/model/user_profile.dart';
 import '../../data/repository/exam_plan_repository_impl.dart';
 import '../../domain/model/exam_plan_input.dart';
+import '../../domain/model/exam_plan_result.dart';
 import '../../domain/model/subject_scope_input.dart';
 import '../../domain/repository/exam_plan_repository.dart';
 
@@ -70,14 +71,14 @@ class ExamPlanController extends StateNotifier<ExamPlanFormState> {
     state = validationState.copyWith(isSubmitting: true);
 
     try {
-      final userProfile = await _repository.saveExamPlan(
+      final examPlanResult = await _repository.saveExamPlan(
         ExamPlanInput(
           targetExamType: state.targetExamType!,
           targetExamLabel: normalizedLabel,
           examDate: normalizedDate,
         ),
       );
-      await _persistUserProfile(userProfile);
+      await _persistExamPlan(examPlanResult);
       state = state.copyWith(isSubmitting: false, isSuccess: true);
       return true;
     } on ApiErrorException catch (error) {
@@ -92,38 +93,30 @@ class ExamPlanController extends StateNotifier<ExamPlanFormState> {
     }
   }
 
-  Future<void> _persistUserProfile(UserProfile userProfile) {
+  Future<void> _persistExamPlan(ExamPlanResult result) {
     final tokens = _sessionController.state.tokens;
-    if (tokens == null) {
+    final currentUser = _sessionController.state.userProfile;
+    if (tokens == null || currentUser == null) {
       return Future.value();
     }
 
-    final currentUser = _sessionController.state.userProfile;
-    final mergedUserProfile = currentUser == null
-        ? userProfile
-        : UserProfile(
-            id: userProfile.id,
-            name: userProfile.name,
-            email: userProfile.email ?? currentUser.email,
-            age: userProfile.age ?? currentUser.age,
-            schoolLevel: userProfile.schoolLevel ?? currentUser.schoolLevel,
-            targetExamType:
-                userProfile.targetExamType ?? currentUser.targetExamType,
-            targetExamLabel:
-                userProfile.targetExamLabel ?? currentUser.targetExamLabel,
-            examDate: userProfile.examDate ?? currentUser.examDate,
-            usualStudyHoursPerDay:
-                userProfile.usualStudyHoursPerDay ??
-                currentUser.usualStudyHoursPerDay,
-            preferredStudyMethod:
-                userProfile.preferredStudyMethod ??
-                currentUser.preferredStudyMethod,
-            sproutCount: userProfile.sproutCount ?? currentUser.sproutCount,
-            attendanceStreakDays:
-                userProfile.attendanceStreakDays ??
-                currentUser.attendanceStreakDays,
-            onboardingCompleted: userProfile.onboardingCompleted,
-          );
+    // The exam-plan endpoint returns only the exam fields, so preserve the
+    // cached user identity and merge just those fields into the session.
+    final mergedUserProfile = UserProfile(
+      id: currentUser.id,
+      name: currentUser.name,
+      email: currentUser.email,
+      age: currentUser.age,
+      schoolLevel: currentUser.schoolLevel,
+      targetExamType: result.targetExamType ?? currentUser.targetExamType,
+      targetExamLabel: result.targetExamLabel ?? currentUser.targetExamLabel,
+      examDate: result.examDate ?? currentUser.examDate,
+      usualStudyHoursPerDay: currentUser.usualStudyHoursPerDay,
+      preferredStudyMethod: currentUser.preferredStudyMethod,
+      sproutCount: currentUser.sproutCount,
+      attendanceStreakDays: currentUser.attendanceStreakDays,
+      onboardingCompleted: currentUser.onboardingCompleted,
+    );
 
     return _sessionController.save(
       tokens: tokens,

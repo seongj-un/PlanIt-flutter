@@ -11,6 +11,7 @@ class AppTextField extends StatelessWidget {
     this.textInputAction,
     this.enabled = true,
     this.onSubmitted,
+    this.suffixIcon,
     super.key,
   });
 
@@ -23,6 +24,7 @@ class AppTextField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final bool enabled;
   final ValueChanged<String>? onSubmitted;
+  final Widget? suffixIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +39,7 @@ class AppTextField extends StatelessWidget {
         labelText: label,
         hintText: hintText,
         errorText: errorText,
+        suffixIcon: suffixIcon,
       ),
     );
   }

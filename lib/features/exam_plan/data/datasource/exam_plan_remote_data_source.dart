@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/network_providers.dart';
-import '../../../my_page/data/dto/user_profile_dto.dart';
+import '../dto/active_exam_plan_response_dto.dart';
 import '../dto/exam_plan_request_dto.dart';
 import '../dto/subject_scope_request_dto.dart';
 
@@ -18,18 +18,18 @@ class ExamPlanRemoteDataSource {
 
   final ApiClient _apiClient;
 
-  Future<UserProfileDto> saveExamPlan(ExamPlanRequestDto request) {
-    return _apiClient.put<UserProfileDto>(
+  Future<ActiveExamPlanResponseDto> saveExamPlan(ExamPlanRequestDto request) {
+    return _apiClient.put<ActiveExamPlanResponseDto>(
       '/exam-plans/active',
       data: request.toJson(),
-      parser: UserProfileDto.fromJson,
+      parser: ActiveExamPlanResponseDto.fromJson,
     );
   }
 
   Future<void> saveSubjectScopes(List<SubjectScopeRequestDto> requests) async {
     await _apiClient.put<Object>(
       '/exam-plans/active/scopes',
-      data: {'subjects': requests.map((request) => request.toJson()).toList()},
+      data: {'scopes': requests.map((request) => request.toJson()).toList()},
       parser: (_) => const Object(),
     );
   }

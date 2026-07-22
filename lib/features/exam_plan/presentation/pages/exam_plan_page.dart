@@ -82,8 +82,14 @@ class _ExamPlanPageState extends ConsumerState<ExamPlanPage> {
                         controller: _dateController,
                         label: '시험 날짜',
                         hintText: '2026-11-19',
+                        keyboardType: TextInputType.datetime,
                         errorText: state.examDateError,
                         enabled: !state.isSubmitting,
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.calendar_today_outlined),
+                          tooltip: '날짜 선택',
+                          onPressed: state.isSubmitting ? null : _pickExamDate,
+                        ),
                       ),
                       if (state.formError != null) ...[
                         const SizedBox(height: 16),
@@ -109,6 +115,33 @@ class _ExamPlanPageState extends ConsumerState<ExamPlanPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _pickExamDate() async {
+    final now = DateTime.now();
+    final firstDate = DateTime(now.year - 1);
+    final lastDate = DateTime(now.year + 10);
+    var initialDate = DateTime.tryParse(_dateController.text.trim()) ?? now;
+    if (initialDate.isBefore(firstDate)) {
+      initialDate = firstDate;
+    } else if (initialDate.isAfter(lastDate)) {
+      initialDate = lastDate;
+    }
+
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: firstDate,
+      lastDate: lastDate,
+    );
+    if (picked == null) {
+      return;
+    }
+
+    final year = picked.year.toString().padLeft(4, '0');
+    final month = picked.month.toString().padLeft(2, '0');
+    final day = picked.day.toString().padLeft(2, '0');
+    _dateController.text = '$year-$month-$day';
   }
 
   Future<void> _submit(ExamPlanController controller) async {

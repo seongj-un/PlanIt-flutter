@@ -43,7 +43,11 @@ abstract final class AppRedirectLogic {
       return RoutePaths.studyProfile;
     }
 
-    if (_isPublicOnlyRoute(location) || location == RoutePaths.splash) {
+    // Once onboarded, only auth routes and the splash bounce back to home.
+    // The onboarding / plan-generation routes stay reachable so the user can
+    // create a new plan later — e.g. if they skipped plan generation during
+    // onboarding, "플랜 만들기" on the home screen can route back into the flow.
+    if (_isAuthRoute(location) || location == RoutePaths.splash) {
       return RoutePaths.home;
     }
 
@@ -56,21 +60,10 @@ abstract final class AppRedirectLogic {
         location == RoutePaths.signUp;
   }
 
-  static bool _isOnboardingRoute(String location) {
-    return location == RoutePaths.studyProfile ||
-        location == RoutePaths.examPlan ||
-        location == RoutePaths.subjectScope ||
-        location == RoutePaths.planGenerationLoading;
-  }
-
   static bool _isAllowedOnboardingRoute(String location) {
     return location == RoutePaths.studyProfile ||
         location == RoutePaths.examPlan ||
         location == RoutePaths.subjectScope ||
         location == RoutePaths.planGenerationLoading;
-  }
-
-  static bool _isPublicOnlyRoute(String location) {
-    return _isAuthRoute(location) || _isOnboardingRoute(location);
   }
 }

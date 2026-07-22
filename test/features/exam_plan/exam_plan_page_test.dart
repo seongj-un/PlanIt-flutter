@@ -11,6 +11,7 @@ import 'package:planit_flutter/core/storage/preferences_service.dart';
 import 'package:planit_flutter/core/storage/secure_storage_service.dart';
 import 'package:planit_flutter/features/exam_plan/data/repository/exam_plan_repository_impl.dart';
 import 'package:planit_flutter/features/exam_plan/domain/model/exam_plan_input.dart';
+import 'package:planit_flutter/features/exam_plan/domain/model/exam_plan_result.dart';
 import 'package:planit_flutter/features/exam_plan/domain/model/subject_scope_input.dart';
 import 'package:planit_flutter/features/exam_plan/domain/repository/exam_plan_repository.dart';
 import 'package:planit_flutter/features/exam_plan/presentation/pages/exam_plan_page.dart';
@@ -109,6 +110,53 @@ void main() {
       ),
     ]);
   });
+
+  testWidgets('picks the exam date from the calendar without typing', (
+    tester,
+  ) async {
+    final repository = _FakeExamPlanRepository();
+    final sessionController = SessionController(
+      SessionRepository(
+        secureStorage: _MemorySecureStorageService(),
+        preferencesService: _MemoryPreferencesService(),
+      ),
+    );
+    await sessionController.save(
+      tokens: _tokens,
+      userProfile: UserProfile(
+        id: 1,
+        name: '김민지',
+        email: 'minji@example.com',
+        preferredStudyMethod: 'BALANCED',
+        targetExamType: 'CSAT',
+        targetExamLabel: '수능',
+        examDate: DateTime(2026, 11, 19),
+        usualStudyHoursPerDay: 4,
+        onboardingCompleted: false,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          examPlanRepositoryProvider.overrideWithValue(repository),
+          sessionControllerProvider.overrideWith((ref) => sessionController),
+        ],
+        child: const MaterialApp(home: ExamPlanPage()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // Open the date picker from the calendar icon and choose a day.
+    await tester.tap(find.byTooltip('날짜 선택'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('25'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // The field is populated in yyyy-MM-dd format with no manual typing.
+    expect(find.text('2026-11-25'), findsWidgets);
+  });
 }
 
 class _FakeExamPlanRepository implements ExamPlanRepository {
@@ -116,19 +164,13 @@ class _FakeExamPlanRepository implements ExamPlanRepository {
   List<SubjectScopeInput>? lastSubjectScopes;
 
   @override
-  Future<UserProfile> saveExamPlan(ExamPlanInput input) async {
+  Future<ExamPlanResult> saveExamPlan(ExamPlanInput input) async {
     lastExamPlanInput = input;
 
-    return UserProfile(
-      id: 1,
-      name: '김민지',
-      email: 'minji@example.com',
-      preferredStudyMethod: 'BALANCED',
+    return ExamPlanResult(
       targetExamType: input.targetExamType,
       targetExamLabel: input.targetExamLabel,
       examDate: DateTime.parse(input.examDate),
-      usualStudyHoursPerDay: 4,
-      onboardingCompleted: false,
     );
   }
 

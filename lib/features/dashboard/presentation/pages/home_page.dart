@@ -6,6 +6,7 @@ import '../../../../app/router/route_paths.dart';
 import '../../../../shared/widgets/app_loading_view.dart';
 import '../../../../shared/widgets/app_scaffold.dart';
 import '../../../../shared/widgets/plan_item_tile.dart';
+import '../../../../shared/widgets/primary_button.dart';
 import '../../../../shared/widgets/progress_summary_card.dart';
 import '../../../../shared/widgets/section_card.dart';
 import '../../../today_plan/presentation/controllers/today_plan_controller.dart';
@@ -50,15 +51,43 @@ class _HomePageState extends ConsumerState<HomePage> {
 
     if (dashboard == null || todayPlan == null || progress == null) {
       return AppScaffold(
-        body: AppLoadingView(
-          title: '홈 정보를 불러올 수 없어요',
-          message: errorMessage ?? '잠시 후 다시 시도해주세요.',
-          isLoading: false,
-          actionLabel: '다시 시도',
-          onAction: () {
-            ref.read(dashboardControllerProvider.notifier).load(forceRefresh: true);
-            ref.read(todayPlanControllerProvider.notifier).load(forceRefresh: true);
-          },
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '아직 학습 플랜이 없어요',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  errorMessage ?? '플랜을 만들면 오늘 할 공부가 여기에 표시돼요.',
+                  style: Theme.of(context).textTheme.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                PrimaryButton(
+                  label: '플랜 만들기',
+                  onPressed: () => context.go(RoutePaths.subjectScope),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () {
+                    ref
+                        .read(dashboardControllerProvider.notifier)
+                        .load(forceRefresh: true);
+                    ref
+                        .read(todayPlanControllerProvider.notifier)
+                        .load(forceRefresh: true);
+                  },
+                  child: const Text('다시 시도'),
+                ),
+              ],
+            ),
+          ),
         ),
       );
     }

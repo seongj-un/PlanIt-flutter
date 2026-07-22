@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../my_page/domain/model/user_profile.dart';
 import '../../domain/model/exam_plan_input.dart';
+import '../../domain/model/exam_plan_result.dart';
 import '../../domain/model/subject_scope_input.dart';
 import '../../domain/repository/exam_plan_repository.dart';
 import '../datasource/exam_plan_remote_data_source.dart';
@@ -22,7 +22,7 @@ class ExamPlanRepositoryImpl implements ExamPlanRepository {
   final ExamPlanRemoteDataSource _remoteDataSource;
 
   @override
-  Future<UserProfile> saveExamPlan(ExamPlanInput input) async {
+  Future<ExamPlanResult> saveExamPlan(ExamPlanInput input) async {
     final response = await _remoteDataSource.saveExamPlan(
       ExamPlanRequestDto.fromDomain(input),
     );

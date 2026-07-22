@@ -19,25 +19,23 @@ class FlutterSecureStorageService implements SecureStorageService {
 
   final FlutterSecureStorage _storage;
 
+  // Access the storage sequentially (never via Future.wait). The web
+  // implementation of flutter_secure_storage lazily derives its encryption key
+  // and deadlocks when concurrent read/write/delete calls race on that
+  // initialization, which hangs the auth interceptor before any request is
+  // sent. Sequential access is safe on every platform.
   @override
   Future<void> clearTokens() async {
-    await Future.wait<void>([
-      _storage.delete(key: _accessTokenKey),
-      _storage.delete(key: _refreshTokenKey),
-      _storage.delete(key: _expiresAtKey),
-    ]);
+    await _storage.delete(key: _accessTokenKey);
+    await _storage.delete(key: _refreshTokenKey);
+    await _storage.delete(key: _expiresAtKey);
   }
 
   @override
   Future<SessionTokens?> readTokens() async {
-    final values = await Future.wait<String?>([
-      _storage.read(key: _accessTokenKey),
-      _storage.read(key: _refreshTokenKey),
-      _storage.read(key: _expiresAtKey),
-    ]);
-    final accessToken = values[0];
-    final refreshToken = values[1];
-    final expiresAtRaw = values[2];
+    final accessToken = await _storage.read(key: _accessTokenKey);
+    final refreshToken = await _storage.read(key: _refreshTokenKey);
+    final expiresAtRaw = await _storage.read(key: _expiresAtKey);
 
     if (accessToken == null || refreshToken == null || expiresAtRaw == null) {
       return null;
@@ -58,13 +56,11 @@ class FlutterSecureStorageService implements SecureStorageService {
 
   @override
   Future<void> saveTokens(SessionTokens tokens) async {
-    await Future.wait<void>([
-      _storage.write(key: _accessTokenKey, value: tokens.accessToken),
-      _storage.write(key: _refreshTokenKey, value: tokens.refreshToken),
-      _storage.write(
-        key: _expiresAtKey,
-        value: tokens.expiresAt.toUtc().toIso8601String(),
-      ),
-    ]);
+    await _storage.write(key: _accessTokenKey, value: tokens.accessToken);
+    await _storage.write(key: _refreshTokenKey, value: tokens.refreshToken);
+    await _storage.write(
+      key: _expiresAtKey,
+      value: tokens.expiresAt.toUtc().toIso8601String(),
+    );
   }
 }

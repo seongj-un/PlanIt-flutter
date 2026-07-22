@@ -222,7 +222,7 @@ class _SubjectScopeCardState extends State<_SubjectScopeCard> {
             AppTextField(
               controller: widget.draft.rangeController,
               label: '시험 범위',
-              hintText: '예: 수열과 극한 1~3단원',
+              hintText: '예: 수열과 극한 12~63쪽',
               enabled: widget.enabled,
             ),
             const SizedBox(height: 12),
